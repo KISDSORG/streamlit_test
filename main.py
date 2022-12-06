@@ -49,13 +49,26 @@ def get_corp_info(rcept_no):
 
     return df
 
+def convert_df(df):
+    return df.to_csv().encode('utf-8')
+
 def print_hi(name):
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
     st.title('대주주 담보대출 현황')
     st.write("대상 기업: 삼성전자")
 
-    st.dataframe(get_corp_info('20221021000405'))
+    df = get_corp_info('20221021000405')
+    st.dataframe(df)
+
+    csv = convert_df(df)
+
+    st.download_button(
+        label="Download",
+        data=csv,
+        file_name='st_test.csv',
+        mime='text/csv'
+    )
 
 
 # Press the green button in the gutter to run the script.
