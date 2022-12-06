@@ -50,7 +50,7 @@ def get_corp_info(rcept_no):
     return df
 
 def convert_df(df):
-    return df.to_csv().encode('utf-8')
+    return df.to_csv().encode('utf-8-sig')
 
 def print_hi(name):
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
