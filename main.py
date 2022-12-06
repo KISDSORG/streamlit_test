@@ -18,29 +18,29 @@ def get_corp_info(rcept_no):
     xml_path = os.path.abspath('./{}.xml'.format(rcept_no))
     fp = open(xml_path, 'r', encoding='utf-8')
 
-    soup = BeautifulSoup(fp, features='xml')
-    table = soup.find('TABLE-GROUP', attrs={'ACLASS': 'TRD_RVL'})
-    table_head = table.find('THEAD')
+    soup = BeautifulSoup(fp, features='lxml')
+    table = soup.find('table-group', attrs={'aclass': 'TRD_RVL'})
+    table_head = table.find('thead')
     columns = []
-    for item in table_head.find_all('TH'):
+    for item in table_head.find_all('th'):
         columns.append(item.string)
 
-    table_body = table.find('TBODY')
-    data = table_body.find_all('TR')
+    table_body = table.find('tbody')
+    data = table_body.find_all('tr')
     rows = []
     for item in data[:-1]:
-        no = item.find('TE', attrs={'ACODE': 'SEQ_NO2'}).get_text()
-        spc_nm = item.find('TE', attrs={'ACODE': 'SPC_NM'}).get_text()
-        rlt = item.find('TU', attrs={'AUNIT': 'IFR_RLT2'}).get_text()
-        spc_id = item.find('TE', attrs={'ACODE': 'SPC_ID2'}).get_text()
-        stk_knd = item.find('TU', attrs={'AUNIT': 'STK_KND'}).get_text()
-        cnt = item.find('TE', attrs={'ACODE': 'STK_CNT'}).get_text()
-        rvl = item.find('TE', attrs={'ACODE': 'TRD_RVL'}).get_text()
-        trd_knd = item.find('TE', attrs={'ACODE': 'TRD_KND'}).get_text()
-        trd_sin = item.find('TU', attrs={'AUNIT': 'TRD_SIN'}).get_text()
-        trd_prd = item.find('TE', attrs={'ACODE': 'TRD_PRD'}).get_text()
-        trd_rt = item.find('TE', attrs={'ACODE': 'TRD_RT'}).get_text()
-        trd_rmk = item.find('TE', attrs={'ACODE': 'TRD_RMK'}).get_text()
+        no = item.find('te', attrs={'acode': 'SEQ_NO2'}).get_text()
+        spc_nm = item.find('te', attrs={'acode': 'SPC_NM'}).get_text()
+        rlt = item.find('tu', attrs={'aunit': 'IFR_RLT2'}).get_text()
+        spc_id = item.find('te', attrs={'acode': 'SPC_ID2'}).get_text()
+        stk_knd = item.find('tu', attrs={'aunit': 'STK_KND'}).get_text()
+        cnt = item.find('te', attrs={'acode': 'STK_CNT'}).get_text()
+        rvl = item.find('te', attrs={'acode': 'TRD_RVL'}).get_text()
+        trd_knd = item.find('te', attrs={'acode': 'TRD_KND'}).get_text()
+        trd_sin = item.find('tu', attrs={'aunit': 'TRD_SIN'}).get_text()
+        trd_prd = item.find('te', attrs={'acode': 'TRD_PRD'}).get_text()
+        trd_rt = item.find('te', attrs={'acode': 'TRD_RT'}).get_text()
+        trd_rmk = item.find('te', attrs={'acode': 'TRD_RMK'}).get_text()
 
         rows.append({"연번": no, "성명(명칭)": spc_nm, '보고자와의관계': rlt, '생년월일 또는사업자등록번호 등': spc_id,
                      '주식등의종류': stk_knd, '주식등의수': cnt, '계약 상대방': rvl, '계약의종류': trd_knd,
