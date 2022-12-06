@@ -1,0 +1,6 @@
+streamlit
+requests
+zipfile
+os
+pandas
+beautifulsoup4
