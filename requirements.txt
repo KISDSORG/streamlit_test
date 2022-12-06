@@ -3,4 +3,4 @@ requests
 zipfile
 os
 pandas
-beautifulsoup4
+beautifulsoup4==4.11.1
