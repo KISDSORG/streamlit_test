@@ -18,7 +18,7 @@ def get_corp_info(rcept_no):
     xml_path = os.path.abspath('./{}.xml'.format(rcept_no))
     fp = open(xml_path, 'r', encoding='utf-8')
 
-    soup = BeautifulSoup(fp, features='lxml')
+    soup = BeautifulSoup(fp, features='html.parser')
     table = soup.find('table-group', attrs={'aclass': 'TRD_RVL'})
     table_head = table.find('thead')
     columns = []
