@@ -52,14 +52,8 @@ def get_corp_info(rcept_no):
 def print_hi(name):
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
-    st.title('st test success!')
-    st.write("hello world")
-    st.write("""
-    # MarkDown
-    > comment
-    - one
-    - two
-    """)
+    st.title('대주주 담보대출 현황')
+    st.write("대상 기업: 삼성전자")
 
     st.dataframe(get_corp_info('20221021000405'))
 
