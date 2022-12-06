@@ -16,7 +16,7 @@ def get_corp_info(rcept_no):
     zf = zipfile.ZipFile('./corp_document.zip')
     zf.extractall('./')
     xml_path = os.path.abspath('./{}.xml'.format(rcept_no))
-    fp = open(xml_path, 'r')
+    fp = open(xml_path, 'r', encoding='utf-8')
 
     soup = BeautifulSoup(fp, features='xml')
     table = soup.find('TABLE-GROUP', attrs={'ACLASS': 'TRD_RVL'})
@@ -61,7 +61,7 @@ def print_hi(name):
     - two
     """)
 
-    st.dataframe(get_corp_info('20211221900349'))
+    st.dataframe(get_corp_info('20221021000405'))
 
 
 # Press the green button in the gutter to run the script.
