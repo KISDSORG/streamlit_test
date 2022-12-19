@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     st.title('대주주 담보대출 현황')
     corp = st.text_input('기업명', '삼성전자')
-    start = st.date_input(':calendar: 시작일')
+    start = st.date_input(':calendar:')
     end = st.date_input('종료일', min_value=start)
 
     df = get_corp_code(corp, start, end)
