@@ -13,12 +13,13 @@ def get_corp_code(corp, start, end):
     params = {'crtfc_key': api_key}
     response = requests.get(url, params=params)
     soup = BeautifulSoup(response.content, features='lxml')
+    corp_code = ''
     for c in soup.find_all('list'):
         if c.corp_name.get_text() == '삼성전자':
             corp_code = c.corp_code.get_text()
             break
         else:
-            corp_code = '없음'
+            corp_code = ''
 
     # 보고서 번호 리스트 가져오기
     rcept_no_list = []
@@ -100,10 +101,9 @@ if __name__ == '__main__':
     end = st.date_input('종료일', min_value=start)
 
     # button 생성하기
-    df = st.button('조회', on_click=get_corp_code(corp, start, end))
-
-    # df = get_corp_code(corp, start, end)
-    st.dataframe(df)
+    if st.button('조회'):
+        df = get_corp_code(corp, start, end)
+        st.dataframe(df)
 
     csv = convert_df(df)
 
