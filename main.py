@@ -7,7 +7,47 @@ from bs4 import BeautifulSoup
 
 api_key = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
 
-def get_corp_info(rcept_no):
+def get_corp_code(corp, start, end):
+    # 기업 고유번호 가져오기
+    url = 'https://opendart.fss.or.kr/api/corpCode.xml'
+    params = {'crtfc_key': api_key}
+    response = requests.get(url, params=params)
+    soup = BeautifulSoup(response.content, features='lxml')
+    for c in soup.find_all('list'):
+        if c.corp_name.get_text() == '삼성전자':
+            corp_code = c.corp_code.get_text()
+            break
+        else:
+            corp_code = '없음'
+
+    # 보고서 번호 리스트 가져오기
+    rcept_no_list = []
+    url = 'https://opendart.fss.or.kr/api/list.xml'
+    params = {'crtfc_key': api_key
+              , 'corp_code': corp_code
+              , 'bgn_de': start.strftime('%Y%m%d') #YYYYMMDD 형태로 변환 필요
+              , 'end_de': end.strftime('%Y%m%d') #YYYYMMDD 형태로 변환 필요
+              , 'pblntf_detail_ty': 'D001'}
+    response = requests.get(url, params=params)
+    soup = BeautifulSoup(response.content, features='lxml')
+    rcept_no_list = []
+    for c in soup.find_all('list'):
+        if c.report_nm.get_text() == '주식등의대량보유상황보고서(일반)':
+            rcept_no_list.append(c.rcept_no.get_text())
+
+    df_all = pd.DataFrame()
+    for r in rcept_no_list:
+        df = get_corp_docu(r)
+        if df.empty:
+            continue
+        else:
+            df_all = pd.concat([df_all, df])
+
+    return df_all
+
+
+def get_corp_docu(rcept_no):
+
     url = 'https://opendart.fss.or.kr/api/document.xml'
     params = {'crtfc_key': api_key, 'rcept_no': rcept_no}
     response = requests.get(url, params=params)
@@ -17,7 +57,6 @@ def get_corp_info(rcept_no):
     zf.extractall('./')
     xml_path = os.path.abspath('./{}.xml'.format(rcept_no))
     fp = open(xml_path, 'r', encoding='utf-8')
-
     soup = BeautifulSoup(fp, features='lxml')
     table = soup.find('table-group', attrs={'aclass': 'TRD_RVL'})
     table_head = table.find('thead')
@@ -52,13 +91,15 @@ def get_corp_info(rcept_no):
 def convert_df(df):
     return df.to_csv().encode('utf-8-sig')
 
-def print_hi(name):
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+
+if __name__ == '__main__':
 
     st.title('대주주 담보대출 현황')
-    st.write("대상 기업: 삼성전자")
+    corp = st.text_input('기업명', '삼성전자')
+    start = st.date_input(':calendar: 시작일')
+    end = st.date_input('종료일', min_value=start)
 
-    df = get_corp_info('20221021000405')
+    df = get_corp_code(corp, start, end)
     st.dataframe(df)
 
     csv = convert_df(df)
@@ -66,11 +107,6 @@ def print_hi(name):
     st.download_button(
         label="Download",
         data=csv,
-        file_name='st_test.csv',
+        file_name='st_sample.csv',
         mime='text/csv'
     )
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
