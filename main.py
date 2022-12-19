@@ -99,7 +99,10 @@ if __name__ == '__main__':
     start = st.date_input('시작일')
     end = st.date_input('종료일', min_value=start)
 
-    df = get_corp_code(corp, start, end)
+    # button 생성하기
+    df = st.button('조회', on_click=get_corp_code(corp, start, end))
+
+    # df = get_corp_code(corp, start, end)
     st.dataframe(df)
 
     csv = convert_df(df)
