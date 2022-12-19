@@ -94,9 +94,9 @@ def convert_df(df):
 
 if __name__ == '__main__':
 
-    st.title('대주주 담보대출 현황')
+    st.title('대주주 담보대출 현황 :money_with_wings')
     corp = st.text_input('기업명', '삼성전자')
-    start = st.date_input(':calendar:')
+    start = st.date_input('시작일')
     end = st.date_input('종료일', min_value=start)
 
     df = get_corp_code(corp, start, end)
