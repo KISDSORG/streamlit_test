@@ -105,11 +105,11 @@ if __name__ == '__main__':
         df = get_corp_code(corp, start, end)
         st.dataframe(df)
 
-    csv = convert_df(df)
+        csv = convert_df(df)
 
-    st.download_button(
-        label="Download",
-        data=csv,
-        file_name='st_sample.csv',
-        mime='text/csv'
-    )
+        st.download_button(
+            label="Download",
+            data=csv,
+            file_name='st_sample.csv',
+            mime='text/csv'
+        )
