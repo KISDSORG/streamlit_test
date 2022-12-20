@@ -107,6 +107,7 @@ if __name__ == '__main__':
     if st.button('조회'):
         df = get_corp_code(corp, start, end)
         st.dataframe(df)
+        st.set_option('wideMode', True)
 
         csv = convert_df(df)
 
