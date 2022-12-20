@@ -45,6 +45,8 @@ def get_corp_code(corp, start, end):
         else:
             df_all = pd.concat([df_all, df])
 
+    df_all = df_all[df_all['성명(명칭)']!= '-']
+
     return df_all
 
 
