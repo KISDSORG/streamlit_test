@@ -6,7 +6,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 api_key = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
-st.set_option('wideMode', True)
+st.set_page_config(layout='wide')
 
 def get_corp_code(corp, start, end):
     # 기업 고유번호 가져오기
