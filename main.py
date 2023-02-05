@@ -10,25 +10,27 @@ st.set_page_config(layout='wide')
 
 def get_corp_code(corp, start, end):
     # 기업 고유번호 가져오기
-    url = 'https://opendart.fss.or.kr/api/corpCode.xml'
-    params = {'crtfc_key': api_key}
-    response = requests.get(url, params=params)
-    soup = BeautifulSoup(response.content, features='lxml')
-    corp_code = ''
-    for c in soup.find_all('list'):
-        if c.corp_name.get_text() == '삼성전자':
-            corp_code = c.corp_code.get_text()
-            break
-        else:
-            corp_code = ''
+    # DART api 변경됨, 코드 변경 필요
+    # url = 'https://opendart.fss.or.kr/api/corpCode.xml'
+    # params = {'crtfc_key': api_key}
+    # response = requests.get(url, params=params)
+    # soup = BeautifulSoup(response.content, features='lxml')
+    # corp_code = ''
+    # for c in soup.find_all('list'):
+    #     if c.corp_name.get_text() == '삼성전자':
+    #         corp_code = c.corp_code.get_text()
+    #         break
+    #     else:
+    #         corp_code = ''
+    corp_code = '005930'
 
     # 보고서 번호 리스트 가져오기
     rcept_no_list = []
     url = 'https://opendart.fss.or.kr/api/list.xml'
     params = {'crtfc_key': api_key
               , 'corp_code': corp_code
-              , 'bgn_de': start.strftime('%Y%m%d') #YYYYMMDD 형태로 변환 필요
-              , 'end_de': end.strftime('%Y%m%d') #YYYYMMDD 형태로 변환 필요
+              , 'bgn_de': start.strftime('%Y%m%d')
+              , 'end_de': end.strftime('%Y%m%d')
               , 'pblntf_detail_ty': 'D001'}
     response = requests.get(url, params=params)
     soup = BeautifulSoup(response.content, features='lxml')
