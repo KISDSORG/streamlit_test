@@ -34,7 +34,6 @@ def get_corp_code(corp, start, end):
               , 'pblntf_detail_ty': 'D001'}
     response = requests.get(url, params=params)
     soup = BeautifulSoup(response.content, features='html.parser')
-    rcept_no_list = []
     for c in soup.find_all('list'):
         if c.report_nm.get_text() == '주식등의대량보유상황보고서(일반)':
             rcept_no_list.append(c.rcept_no.get_text())
@@ -47,7 +46,7 @@ def get_corp_code(corp, start, end):
         else:
             df_all = pd.concat([df_all, df])
 
-    df_all = df_all[df_all['성명(명칭)']!= '-']
+    #df_all = df_all[df_all['성명(명칭)']!= '-']
 
     return df_all
 
