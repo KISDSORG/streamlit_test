@@ -33,7 +33,7 @@ def get_corp_code(corp, start, end):
               , 'end_de': end.strftime('%Y%m%d')
               , 'pblntf_detail_ty': 'D001'}
     response = requests.get(url, params=params)
-    soup = BeautifulSoup(response.content, features='lxml')
+    soup = BeautifulSoup(response.content, features='html.parser')
     rcept_no_list = []
     for c in soup.find_all('list'):
         if c.report_nm.get_text() == '주식등의대량보유상황보고서(일반)':
