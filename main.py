@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import zipfile
+from io import BytesIO
+import pickle
 import os
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -9,20 +11,14 @@ api_key = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
 st.set_page_config(layout='wide')
 
 def get_corp_code(corp, start, end):
-    # 기업 고유번호 가져오기
-    # DART api 변경됨, 코드 변경 필요
-    # url = 'https://opendart.fss.or.kr/api/corpCode.xml'
-    # params = {'crtfc_key': api_key}
-    # response = requests.get(url, params=params)
-    # soup = BeautifulSoup(response.content, features='lxml')
-    # corp_code = ''
-    # for c in soup.find_all('list'):
-    #     if c.corp_name.get_text() == '삼성전자':
-    #         corp_code = c.corp_code.get_text()
-    #         break
-    #     else:
-    #         corp_code = ''
-    corp_code = '005930'
+    # 기업 고유번호 -  저정해둔 corpcode 리스트 불러오기
+    with open('./corpcode.pkl', 'rb') as f:
+        corp_list = pickle.load(f)
+
+    for c in corp_list:
+        if c[1] == corp:
+            corp_code = c[0]
+            break
 
     # 보고서 번호 리스트 가져오기
     rcept_no_list = []
@@ -33,7 +29,8 @@ def get_corp_code(corp, start, end):
               , 'end_de': end.strftime('%Y%m%d')
               , 'pblntf_detail_ty': 'D001'}
     response = requests.get(url, params=params)
-    soup = BeautifulSoup(response.content, features='html.parser')
+    soup = BeautifulSoup(response.content, features='lxml')
+    rcept_no_list = []
     for c in soup.find_all('list'):
         if c.report_nm.get_text() == '주식등의대량보유상황보고서(일반)':
             rcept_no_list.append(c.rcept_no.get_text())
@@ -46,7 +43,7 @@ def get_corp_code(corp, start, end):
         else:
             df_all = pd.concat([df_all, df])
 
-    #df_all = df_all[df_all['성명(명칭)']!= '-']
+    df_all = df_all[df_all['성명(명칭)']!= '-']
 
     return df_all
 
