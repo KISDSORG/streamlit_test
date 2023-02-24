@@ -10,7 +10,7 @@ if uploaded_file is not None:
     st.write(bytes_data)
 
     # To convert to a string based IO:
-    stringio = StringIO(uploaded_file.getvalue().decode("utf-8-sig"))
+    stringio = StringIO(uploaded_file.getvalue().decode("cp949"))
     st.write(stringio)
 
     # To read file as string:
