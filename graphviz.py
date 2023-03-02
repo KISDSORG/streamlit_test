@@ -8,7 +8,7 @@ from matplotlib import rc
 font_name = fm.FontProperties(fname='./malgun.ttf').get_name()
 rc('font', family=font_name)
 
-uploaded_file = st.file_uploader("Choose a file", type='xlsx')
+uploaded_file = st.file_uploader("Choose a file", type='xlsx', key='file')
 
 if uploaded_file is not None:
 
