@@ -1,8 +1,8 @@
 import streamlit as st
-import graphviz as gp
+import graphviz
 
 # Create a graphlib graph object
-graph = gp.Digraph()
+graph = graphviz.Digraph()
 graph.edge('run', 'intr')
 graph.edge('intr', 'runbl')
 graph.edge('runbl', 'run')
