@@ -4,5 +4,5 @@ pandas
 beautifulsoup4==4.11.1
 lxml
 openpyxl
-graphviz==0.20.1
+graphviz
 matplotlib==3.5.1
