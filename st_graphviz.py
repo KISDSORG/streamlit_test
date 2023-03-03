@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_option_menu import option_menu
 import pandas as pd
 import openpyxl
 import graphviz
@@ -7,6 +8,12 @@ from matplotlib import rc
 
 font_name = fm.FontProperties(fname='./malgun.ttf').get_name()
 rc('font', family=font_name)
+
+with st.sidebar:
+
+    choose = option_menu("Menu", ["주식연계채권", "기업지배구조"],
+                         icons=['house', 'kanban'],
+                         menu_icon='app-indicator', default_index=0)
 
 uploaded_file = st.file_uploader("Choose a file", type='xlsx', key="file")
 
