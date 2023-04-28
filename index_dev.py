@@ -25,13 +25,14 @@ def get_cps_data(start_dt, end_dt, all_yn, corp_code=None):
         rcept_no_list.extend(pe_func.get_rcept_no_by_corp(corp_code, rcept_name, start_dt, end_dt))
     rows = []
     print("###리스트###", rcept_no_list)
-    for rcept in rcept_no_list:
-        row = pe_func.get_cps_docu(rcept)
-        rows.append(row)
+#     for rcept in rcept_no_list:
+#         row = pe_func.get_cps_docu(rcept)
+#         rows.append(row)
 
-    df = pd.DataFrame(rows)
-    df = df.dropna(subset=['발행사'])
-    return df
+#     df = pd.DataFrame(rows)
+#     df = df.dropna(subset=['발행사'])
+#     return df
+    return rows
 
 ### 화면 ###
 with st.form(key='form1'):
