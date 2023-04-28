@@ -37,7 +37,7 @@ def get_cps_data(start_dt, end_dt, all_yn_box, corp_code=None):
 
 ### 화면 ###
 with st.form(key='form1'):
-    all_yn_box = st.checkbox('전체')
+    all_yn_box = st.checkbox('전체', value=True)
     if all_yn_box == False:
         corp_dict = pe_func.get_corp_dict()
         corp_nm_list = []
