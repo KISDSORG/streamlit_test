@@ -1,3 +1,4 @@
+import streamlit as st
 import warnings
 import json
 import requests
@@ -7,13 +8,21 @@ from io import BytesIO
 import xmltodict
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 warnings.filterwarnings('ignore')
 API_KEY = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
 headers= {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
           'Accept-Encoding': '*', 'Connection': 'keep-alive'}
-options = webdriver.ChromeOptions()
-options.add_argument('headless')
+options = Options()
+options.add_argument('--disable-gpu')
+options.add_argument('--headless')
+
+@st.experimental_singleton
+def get_driver():
+    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 # 고유번호-회사명 매칭 리스트
 def get_corp_dict():
@@ -177,7 +186,8 @@ def get_perp_docu(rcept_no):
 
 # 주요사항보고서(유상증자결정) 상세정보 추출
 def get_cps_docu(rcept_no):
-    driver = webdriver.Chrome('./chromedriver', chrome_options=options)
+    # driver = webdriver.Chrome('./chromedriver', chrome_options=options)
+    driver = get_driver()
     url = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + rcept_no
     driver.get(url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
