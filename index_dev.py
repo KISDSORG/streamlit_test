@@ -33,18 +33,22 @@ def get_cps_data(start_dt, end_dt, all_yn, corp_code=None):
     return df
 
 ### 화면 ###
-all_yn_box = st.checkbox('전체')
-start_dt = st.date_input('시작일')
-end_dt = st.date_input('종료일')
+with st.form(key='form1'):
+    all_yn_box = st.checkbox('전체')
+    start_dt = st.date_input('시작일')
+    end_dt = st.date_input('종료일')
+    form1_bt = st.form_submit_button('조회')
 
-if all_yn_box :
-    get_cps_data(start_dt, end_dt, all_yn)
-else:
-    all_yn = False
-    corp_dict = pe_func.get_corp_dict()
-    corp_nm_list = []
-    for c in corp_dict:
-        corp_nm_list.append(c)
-    corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
-    corp_code = corp_dict.get(corp_nm)
-    get_cps_data(start_dt, end_dt, all_yn, corp_code)
+if form1_bt:
+    if all_yn_box :
+        df = get_cps_data(start_dt, end_dt, all_yn)
+    else:
+        all_yn = False
+        corp_dict = pe_func.get_corp_dict()
+        corp_nm_list = []
+        for c in corp_dict:
+            corp_nm_list.append(c)
+        corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
+        corp_code = corp_dict.get(corp_nm)
+        df = get_cps_data(start_dt, end_dt, all_yn, corp_code)
+    st.dataframe(df)
