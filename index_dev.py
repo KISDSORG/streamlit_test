@@ -24,6 +24,7 @@ def get_cps_data(start_dt, end_dt, all_yn, corp_code=None):
     else:
         rcept_no_list.extend(pe_func.get_rcept_no_by_corp(corp_code, rcept_name, start_dt, end_dt))
     rows = []
+    print(rcept_no_list)
     for rcept in rcept_no_list:
         row = pe_func.get_cps_docu(rcept)
         rows.append(row)
