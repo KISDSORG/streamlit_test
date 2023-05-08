@@ -19,6 +19,7 @@ def convert_df(df):
 def get_cps_data(start_dt, end_dt, all_yn_box, corp_code=None):
     rcept_name = '주요사항보고서(유상증자결정)'
     rcept_no_list = []
+    print(start_dt, end_dt, all_yn_box, corp_code)
     if all_yn_box:
         print("all_yn_box is True!")
         rcept_no_list.extend(pe_func.get_rcept_no(rcept_name, start_dt, end_dt))
