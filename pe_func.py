@@ -1,6 +1,8 @@
 import streamlit as st
 import warnings
+import pandas as pd
 import json
+import pickle
 import requests
 from bs4 import BeautifulSoup
 import zipfile
@@ -39,9 +41,11 @@ def get_corp_dict():
         # corp_nm_list.append(data[i]['corp_name'])
     return corp_dict
 
-# 보고서명, 일자로 검색해서 보고서 접수번호 추출(최대 호출 가능기간: 3개월)
+# 보고서명, 일자로 검색해서 보고서접수번호 추출(최대 호출 가능기간: 3개월)
 def get_rcept_no(report_nm, bgn_de, end_de):
     rcept_no_list = []
+    # bgn_de = bgn_de.strftime('%Y%m%d')
+    # end_de = end_de.strftime('%Y%m%d')
     url = 'https://opendart.fss.or.kr/api/list.xml'
     params = {'crtfc_key': API_KEY
         , 'bgn_de': bgn_de
@@ -73,7 +77,7 @@ def get_rcept_no(report_nm, bgn_de, end_de):
 
     return rcept_no_list
 
-# 고유번호, 보고서명, 일자로 검색해서 보고서 접수번호 추출
+# 고유번호, 보고서명, 일자로 검색해서 보고서접수번호 추출
 def get_rcept_no_by_corp(corp_code, report_nm, bgn_de, end_de):
     rcept_no_list = []
     url = 'https://opendart.fss.or.kr/api/list.xml'
@@ -109,11 +113,55 @@ def get_rcept_no_by_corp(corp_code, report_nm, bgn_de, end_de):
 
     return rcept_no_list
 
+# 주요사항보고서(메자닌채권) 호출
+def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr_sf_min, intr_sf_max):
+    with open('./Mezzanine_new.pkl', 'rb') as f:
+        df = pickle.load(f)
+        df = df[df['종류'].isin(knd)]
+        df['표면이자율(%)'] = df['표면이자율(%)'].str.strip()
+        df['만기이자율(%)'] = df['만기이자율(%)'].str.strip()
+        df.loc[df['표면이자율(%)'] == '-', '표면이자율(%)'] = -1000
+        df.loc[df['만기이자율(%)'] == '-', '만기이자율(%)'] = -1000
+        df = df[(((df['표면이자율(%)'].astype(float) >= intr_ex_min) & (df['표면이자율(%)'].astype(float) <= intr_ex_max)) | (
+                    df['표면이자율(%)'].astype(float) == -1000))
+                & (((df['만기이자율(%)'].astype(float) >= intr_sf_min) & (df['만기이자율(%)'].astype(float) <= intr_sf_max)) | (
+                    df['만기이자율(%)'].astype(float) == -1000))]
+        if corp_nm == '':
+            df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))]
+        else:
+            df['발행사'] = df['발행사'].str.replace('주식회사', '').str.replace('(주)', '').str.replace('(', '').str.replace(')',
+                                                                                                                  '').str.strip()
+            df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))
+                    & (df['발행사'] == corp_nm)]
+        df.loc[df['표면이자율(%)'] == -1000, '표면이자율(%)'] = '-'
+        df.loc[df['만기이자율(%)'] == -1000, '만기이자율(%)'] = '-'
+    return df
+
+# 주요사항보고서(자본으로인정되는채무증권발행결정) 호출
+def get_perp_data(start_dt, end_dt, corp_code=None):
+    rcept_name = '주요사항보고서(자본으로인정되는채무증권발행결정)'
+    rcept_no_list = []
+    start_dt = start_dt.strftime('%Y%m%d')
+    end_dt = end_dt.strftime('%Y%m%d')
+    if corp_code == '':
+        rcept_no_list.extend(get_rcept_no(rcept_name, start_dt, end_dt))
+    else:
+        rcept_no_list.extend(get_rcept_no_by_corp(corp_code, rcept_name, start_dt, end_dt))
+    rows = []
+    for rcept in rcept_no_list:
+        row = get_perp_docu(rcept)
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+    if df.empty == False :
+        df = df.dropna(subset=['발행사'])
+    return df
+
 # 주요사항보고서(자본으로인정되는채무증권발행결정) 상세정보 추출
 def get_perp_docu(rcept_no):
     url = 'https://opendart.fss.or.kr/api/document.xml'
     params = {'crtfc_key': API_KEY, 'rcept_no': rcept_no}
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, headers=headers)
     try:
         zf = zipfile.ZipFile(BytesIO(response.content))
         fp = zf.read('{}.xml'.format(rcept_no))
@@ -148,17 +196,17 @@ def get_perp_docu(rcept_no):
             exp_dt = table.find('tu', attrs={'aunit': 'EXP_DT'}).get_text()  # 사채만기일
             exp_dt = '' if exp_dt == '-' else exp_dt
             exp_dt_dur = table.find('te', attrs={'acode': 'EXP_DT_DUR'}).get_text()  # 사채만기기간
-            int_gv_mth = table.find('te', attrs={'acode': 'INT_GV_MTH'}).get_text().replace('\n', '')  # 이자지급방법
-            int_stp = table.find('te', attrs={'acode': 'INT_STP'}).get_text().replace('\n', '')  # 이자지급 정지(유예) 가능여부 및 조건
-            int_stp_acm = table.find('te', attrs={'acode': 'INT_STP_ACM'}).get_text().replace('\n', '')  # 유예이자 누적 여부
+            int_gv_mth = table.find('te', attrs={'acode': 'INT_GV_MTH'}).get_text().replace('\n', '').replace('-', '')  # 이자지급방법
+            int_stp = table.find('te', attrs={'acode': 'INT_STP'}).get_text().replace('\n', '').replace('-', '')  # 이자지급 정지(유예) 가능여부 및 조건
+            int_stp_acm = table.find('te', attrs={'acode': 'INT_STP_ACM'}).get_text().replace('\n', '').replace('-', '')  # 유예이자 누적 여부
             int_st_up = table.find('te', attrs={'acode': 'INT_ST_UP'}).get_text().replace('\n',
-                                                                                          '')  # 금리상향조정 등 이자율 조정 조건
-            rtn_mth = table.find('te', attrs={'acode': 'RTN_MTH'}).get_text().replace('\n', '')  # 원금 만기상환방법
+                                                                                          '').replace('-', '')  # 금리상향조정 등 이자율 조정 조건
+            rtn_mth = table.find('te', attrs={'acode': 'RTN_MTH'}).get_text().replace('\n', '').replace('-', '')  # 원금 만기상환방법
             erl_rtn_mth = table.find('te', attrs={'acode': 'ERL_RTN_MTH'}).get_text().replace('\n',
-                                                                                              '')  # 원금 조기상환 가능시점 및 조건
+                                                                                              '').replace('-', '')  # 원금 조기상환 가능시점 및 조건
             exp_rnw_mth = table.find('te', attrs={'acode': 'EXP_RNW_MTH'}).get_text().replace('\n',
-                                                                                              '')  # 원금 상환 만기연장 조건 및 방법
-            opt_fct = table.find('te', attrs={'acode': 'OPT_FCT'}).get_text().replace('\n', '')  # 옵션에 관한 사항
+                                                                                              '').replace('-', '')  # 원금 상환 만기연장 조건 및 방법
+            opt_fct = table.find('te', attrs={'acode': 'OPT_FCT'}).get_text().replace('\n', '').replace('-', '')  # 옵션에 관한 사항
             chf_agn = table.find('te', attrs={'acode': 'CHF_AGN'}).get_text()  # 대표주관회사
             issu_table_group = soup.find('table-group', attrs={'aclass': 'CRP_ISSU'})  # 인수인(특정인에 대한 대상자별 사채발행내역)
             issu_table = issu_table_group.find('table', attrs={'aclass': 'EXTRACTION'})
@@ -184,9 +232,29 @@ def get_perp_docu(rcept_no):
 
     return row
 
+# 주요사항보고서(유상증자결정) 호출
+def get_cps_data(start_dt, end_dt, corp_code=None):
+    rcept_name = '주요사항보고서(유상증자결정)'
+    rcept_no_list = []
+    start_dt = start_dt.strftime('%Y%m%d')
+    end_dt = end_dt.strftime('%Y%m%d')
+    if corp_code == '':
+        rcept_no_list.extend(get_rcept_no(rcept_name, start_dt, end_dt))
+    else:
+        rcept_no_list.extend(get_rcept_no_by_corp(corp_code, rcept_name, start_dt, end_dt))
+    rows = []
+    for rcept in rcept_no_list:
+        row = get_cps_docu(rcept)
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+    if df.empty == False :
+        df = df.dropna(subset=['발행사'])
+    return df
+
 # 주요사항보고서(유상증자결정) 상세정보 추출
 def get_cps_docu(rcept_no):
-    # driver = webdriver.Chrome('./chromedriver', chrome_options=options)
+    print("보고서 번호:", rcept_no)
     driver = get_driver()
     url = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + rcept_no
     driver.get(url)
@@ -194,44 +262,49 @@ def get_cps_docu(rcept_no):
     company_nm = soup.select('body > div.wrapper > div > div.header > div.top > div.nameWrap > span:nth-child(2)')[
         0].get_text()
     iframe_src = driver.find_element(by=By.XPATH, value='//*[@id="ifrm"]').get_attribute("src")
-    response = requests.get(iframe_src)
+    response = requests.get(iframe_src, headers=headers)
     soup = BeautifulSoup(response.content, features='html.parser')
 
     nstk_estk = soup.select('td:-soup-contains("기타주식 (주)")')  # 기타주식(주) 위치 찾기
-    nstk_estk_cnt = nstk_estk[0].next_sibling.next_sibling.get_text()  # 신주의 종류와 수
-
-    if nstk_estk_cnt == '-':
+    if not nstk_estk:
         row = {}
     else:
-        rcept_dt = rcept_no[:8]
-        tbody1 = nstk_estk[0].parent.parent
-        fv_ps = tbody1.select('tr:nth-child(3) > td:nth-child(2)')[0].get_text()  # 1주당 액면가액
-        ic_mthn = tbody1.select('tr:nth-child(10) > td:nth-child(2)')[0].get_text()  # 증자방식
-        try:
-            cvt = soup.select('td:-soup-contains("전환에 관한 사항")')[0].parent
-            cvt_cdt = cvt.select('td:nth-child(3)')[0].get_text()  # 전환조건
-            temp_list = []
-            for i in range(5):
-                cvt = cvt.next_sibling.next_sibling
-                temp_list.append(cvt.select('td:nth-child(2)')[0].get_text())
-            cvt_prd = temp_list[0]  # 전환청구기간
-            cvt_knd = temp_list[1]  # 전환주식종류
-            cvt_cnt = temp_list[2]  # 전환주식수
-            vtr_info = temp_list[3]  # 의결권
-            dvd_info = temp_list[4]  # 이익배당
-        except:
-            cvt_cdt = '-'
-            cvt_prd = '-'
-            cvt_knd = '-'
-            cvt_cnt = '-'
-            vtr_info = soup.select('td:-soup-contains("의결권에 관한 사항")')[0].next_sibling.next_sibling.get_text()
-            dvd_info = soup.select('td:-soup-contains("이익배당에 관한 사항")')[0].next_sibling.next_sibling.get_text()
-        pst_std_val = soup.select('td:-soup-contains("기타주식 (원)")')[0].next_sibling.next_sibling.get_text()  # 신주발행가액
-        dc_rate = soup.select('td:-soup-contains("기준주가에 대한 할인율 또는 할증율")')[
-            0].next_sibling.next_sibling.get_text()  # 할인율 또는 할증율
+        nstk_estk_cnt = nstk_estk[0].next_sibling.next_sibling.get_text()  # 신주의 종류와 수
 
-        row = {'발행사': company_nm, '공시일': rcept_dt, '신주의 종류와 수': nstk_estk_cnt, '1주당 액면가액': fv_ps, '증자방식': ic_mthn,
-               '전환조건': cvt_cdt, '전환청구기간': cvt_prd, '전환주식종류': cvt_knd, '전환주식수': cvt_cnt, '의결권': vtr_info,
-               '이익배당': dvd_info,
-               '신주발행가액': pst_std_val, '할인율 또는 할증율(%)': dc_rate}
+        if nstk_estk_cnt.strip() == '-':
+            row = {}
+        else:
+            rcept_dt = rcept_no[:8]
+            tbody1 = nstk_estk[0].parent.parent
+            fv_ps = tbody1.select('tr:nth-child(3) > td:nth-child(2)')[0].get_text()  # 1주당 액면가액
+            ic_mthn = soup.select('td:-soup-contains("증자방식")')[0].next_sibling.next_sibling.get_text() # 증자방식
+            try:
+                vtr_info = soup.select('td:-soup-contains("의결권에 관한 사항")')[0].next_sibling.next_sibling.get_text()
+                dvd_info = soup.select('td:-soup-contains("이익배당에 관한 사항")')[0].next_sibling.next_sibling.get_text()
+            except:
+                vtr_info = '-'
+                dvd_info = '-'
+            pst_std_val = soup.select('td:-soup-contains("기타주식 (원)")')[0].next_sibling.next_sibling.get_text()  # 신주발행가액
+            try:
+                dc_rate = soup.select('td:-soup-contains("기준주가에 대한 할인율 또는 할증율")')[
+                0].next_sibling.next_sibling.get_text()  # 할인율 또는 할증율
+            except:
+                dc_rate ='-'
+
+            row = {'발행사': company_nm, '공시일': rcept_dt, '신주의 종류와 수': nstk_estk_cnt, '1주당 액면가액': fv_ps, '증자방식': ic_mthn,
+                   '의결권': vtr_info, '이익배당': dvd_info, '신주발행가액': pst_std_val, '할인율 또는 할증율(%)': dc_rate}
     return row
+
+# Dataframe 변환 및 다운로드
+def set_df(df, file_nm):
+    df = df.reset_index(drop=True)
+    df.index += 1
+    st.dataframe(df)
+
+    csv = df.to_csv().encode('utf-8-sig')
+    st.download_button(
+        label="Download",
+        data=csv,
+        file_name='{}.csv'.format(file_nm),
+        mime='text/csv'
+    )
