@@ -7,3 +7,5 @@ xmltodict
 seleniumbase
 webdriver-manager
 graphviz
+OpenDartReader==0.2.1
+dart_fss==0.4.2
