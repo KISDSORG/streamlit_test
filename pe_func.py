@@ -271,7 +271,7 @@ def get_cps_docu(rcept_no):
     else:
         nstk_estk_cnt = nstk_estk[0].next_sibling.next_sibling.get_text()  # 신주의 종류와 수
 
-        if nstk_estk_cnt.strip() in ('-', 0) :
+        if nstk_estk_cnt.strip() in ('-', '0') :
             row = {}
         else:
             rcept_dt = rcept_no[:8]
