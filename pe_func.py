@@ -237,6 +237,10 @@ def get_cps_data(start_dt, end_dt, corp_nm):
 
 # Dataframe 변환 및 다운로드
 def set_df(df, file_nm, start_dt, end_dt):
+    # 총 조회 건수
+    row_cnt = "총 " + str(df.shape[0]) + "건"
+    st.text(row_cnt)
+
     df = df.reset_index(drop=True)
     df.index += 1
     st.dataframe(df)
