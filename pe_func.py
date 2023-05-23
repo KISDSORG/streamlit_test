@@ -140,8 +140,8 @@ def get_perp_data(start_dt, end_dt, corp_code=None):
 
     df = pd.DataFrame(rows)
     if df.empty == False :
-        df = df.sort_values('공시일')
         df = df.dropna(subset=['발행사'])
+        df = df.sort_values('공시일', ascending=False)
     return df
 
 # 주요사항보고서(자본으로인정되는채무증권발행결정) 상세정보 추출
@@ -224,7 +224,7 @@ def get_perp_docu(rcept_no):
 
 # 주요사항보고서(유상증자결정) 데이터 호출
 def get_cps_data(start_dt, end_dt, corp_nm):
-    with open('./df_cprs_new.pkl', 'rb') as f:
+    with open('Cprs_new.pkl', 'rb') as f:
         df = pickle.load(f)
     if corp_nm == '':
         df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))]
@@ -234,6 +234,66 @@ def get_cps_data(start_dt, end_dt, corp_nm):
     if df.empty == False :
         df = df.dropna(subset=['발행사'])
     return df
+
+# 주요사항보고서(유상증자결정) 상세정보 추출
+def get_cps_docu(rcept_no):
+    url = 'https://opendart.fss.or.kr/api/document.xml'
+    params = {'crtfc_key': API_KEY, 'rcept_no': rcept_no}
+    response = requests.get(url, params=params)
+    try:
+        zf = zipfile.ZipFile(BytesIO(response.content))
+        fp = zf.read('{}.xml'.format(rcept_no))
+        try:
+            xml_str = fp.decode('cp949')
+            xml_str = xml_str.replace('<=', '')
+            xml = xml_str.encode('cp949')
+        except:
+            xml_str = fp.decode('utf-8')
+            xml_str = xml_str.replace('<=', '')
+            xml = xml_str.encode('utf-8')
+
+        soup = BeautifulSoup(xml, features='html.parser')
+        table = soup.find('table-group', attrs={'aclass': 'CST_CNT'})
+        pst_cnt = table.find('te', attrs={'acode': 'PST_CNT'}).get_text()  # 기타주식(주)
+        if pst_cnt.strip() in ('-', '0'):
+            row = {}
+        else:
+            company_nm = soup.find('company-name').get_text()  # 발행사
+            rcept_dt = rcept_no[:8]  # 공시일
+            fval = table.find('te', attrs={'acode': 'FVAL'}).get_text()  # 1주당 액면가액
+            ci_mth = table.find('tu', attrs={'aunit': 'CI_MTH'}).get_text()  # 증자방식
+
+            table = soup.find('table-group', attrs={'aclass': 'TG_RDT_CVT'})
+            if table is None:
+                table = soup.find('table-group', attrs={'aclass': 'TG_CVT_RIT'})
+            cvt_knd = table.find('te', attrs={'acode': 'CVT_KND'}).get_text()  # 전환주식종류
+            cvt_cnt = table.find('te', attrs={'acode': 'CVT_CNT'}).get_text()  # 전환주식수
+            exe_rt = table.find('te', attrs={'acode': 'EXE_RT'}).get_text()  # 전환비율
+            exe_prc = table.find('te', attrs={'acode': 'EXE_PRC'}).get_text()  # 전환가액
+            exe_func = table.find('te', attrs={'acode': 'EXE_FUNC'}).get_text()  # 전환가액결정방법
+            cvt_rt = table.find('te', attrs={'acode': 'CVT_RT'}).get_text()  # 주식총수대비 비율
+            cvt_bgn_dt = table.find('tu', attrs={'aunit': 'CVT_BGN_DT'}).get_text()  # 시작일
+            cvt_end_dt = table.find('tu', attrs={'aunit': 'CVT_END_DT'}).get_text()  # 종료일
+            cvt_prd = cvt_bgn_dt + "~" + cvt_end_dt
+            cvt_cdt = table.find('te', attrs={'acode': 'EXE_REG'}).get_text()  # 전환조건
+            vtr_info = table.find('te', attrs={'acode': 'VTR_INFO'}).get_text()  # 의결권
+            dvd_info = table.find('te', attrs={'acode': 'DVD_INFO'}).get_text()  # 이익배당
+
+            table = soup.find('table-group', attrs={'aclass': 'THD_ASN_INC'})
+            pst_iss_val = table.find('te', attrs={'acode': 'PST_ISS_VAL'}).get_text()  # 신주발행가액
+            dc_rate = table.find('te', attrs={'acode': 'DC_RATE'}).get_text()  # 할인율, 할증율
+
+            row = {'발행사': company_nm, '공시일': rcept_dt, '신주의 종류와 수': pst_cnt, '1주당 액면가액': fval, '증자방식': ci_mth,
+                   '전환비율': exe_rt, '전환가액': exe_prc, '전환가액결정방법': exe_func, '전환주식종류': cvt_knd, '전환주식수': cvt_cnt,
+                   '주식총수대비비율': cvt_rt, '전환청구기간': cvt_prd, '전환조건': cvt_cdt, '의결권': vtr_info, '이익배당': dvd_info,
+                   '신주발행가액': pst_iss_val, '할인율 또는 할증율(%)': dc_rate}
+
+    except Exception as e:
+        print(rcept_no + " Error!")
+        print(e)
+        row = {}
+
+    return row
 
 # Dataframe 변환 및 다운로드
 def set_df(df, file_nm, start_dt, end_dt):
