@@ -58,9 +58,6 @@ if selected == "주식연계채권":
 
     if form1_bt:
         df = pe_func.get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr_sf_min, intr_sf_max)
-        # 총 조회 건수
-        row_cnt = "총 " + str(df.shape[0]) + "건"
-        st.text(row_cnt)
         pe_func.set_df(df, "mezzanine", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
 elif selected == "타법인출자현황":
@@ -121,8 +118,6 @@ elif selected == "CPS/RCPS":
         if df.empty:
             st.info('수집할 데이터가 없습니다', icon="🤔")
         else:
-            # 총 조회 건수
-            row_cnt = "총 " + str(df.shape[0]) + "건"
             pe_func.set_df(df, "CPS_RCPS", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
 elif selected == "영구채":
@@ -165,8 +160,6 @@ elif selected == "영구채":
                 if df.empty:
                     st.info('수집할 데이터가 없습니다', icon="🤔")
                 else:
-                    # 총 조회 건수
-                    row_cnt = "총 " + str(df.shape[0]) + "건"
                     pe_func.set_df(df, "perp_bond", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
         else:
             with st.spinner("데이터를 수집 중입니다🤖"):
@@ -174,8 +167,6 @@ elif selected == "영구채":
             if df.empty:
                 st.info('수집할 데이터가 없습니다', icon="🤔")
             else:
-                # 총 조회 건수
-                row_cnt = "총 " + str(df.shape[0]) + "건"
                 pe_func.set_df(df, "perp_bond", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
 else:
