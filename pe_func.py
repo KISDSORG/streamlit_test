@@ -8,8 +8,6 @@ from bs4 import BeautifulSoup
 import zipfile
 from io import BytesIO
 import xmltodict
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 
 warnings.filterwarnings('ignore')
 API_KEY = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
@@ -237,48 +235,6 @@ def get_cps_data(start_dt, end_dt, corp_nm):
     if df.empty == False :
         df = df.dropna(subset=['발행사'])
     return df
-
-# 주요사항보고서(유상증자결정) 상세정보 추출
-def get_cps_docu(rcept_no, driver):
-    print("보고서 번호:", rcept_no)
-    url = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + rcept_no
-    driver.get(url)
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-    company_nm = soup.select('body > div.wrapper > div > div.header > div.top > div.nameWrap > span:nth-child(2)')[
-        0].get_text()
-    iframe_src = driver.find_element(by=By.XPATH, value='//*[@id="ifrm"]').get_attribute("src")
-    response = requests.get(iframe_src, headers=headers)
-    soup = BeautifulSoup(response.content, features='html.parser')
-
-    nstk_estk = soup.select('td:-soup-contains("기타주식 (주)")')  # 기타주식(주) 위치 찾기
-    if not nstk_estk:
-        row = {}
-    else:
-        nstk_estk_cnt = nstk_estk[0].next_sibling.next_sibling.get_text()  # 신주의 종류와 수
-
-        if nstk_estk_cnt.strip() in ('-', '0')  :
-            row = {}
-        else:
-            rcept_dt = rcept_no[:8]
-            tbody1 = nstk_estk[0].parent.parent
-            fv_ps = tbody1.select('tr:nth-child(3) > td:nth-child(2)')[0].get_text()  # 1주당 액면가액
-            ic_mthn = soup.select('td:-soup-contains("증자방식")')[0].next_sibling.next_sibling.get_text() # 증자방식
-            try:
-                vtr_info = soup.select('td:-soup-contains("의결권에 관한 사항")')[0].next_sibling.next_sibling.get_text()
-                dvd_info = soup.select('td:-soup-contains("이익배당에 관한 사항")')[0].next_sibling.next_sibling.get_text()
-            except:
-                vtr_info = '-'
-                dvd_info = '-'
-            pst_std_val = soup.select('td:-soup-contains("기타주식 (원)")')[0].next_sibling.next_sibling.get_text()  # 신주발행가액
-            try:
-                dc_rate = soup.select('td:-soup-contains("기준주가에 대한 할인율 또는 할증율")')[
-                0].next_sibling.next_sibling.get_text()  # 할인율 또는 할증율
-            except:
-                dc_rate ='-'
-
-            row = {'발행사': company_nm, '공시일': rcept_dt, '신주의 종류와 수': nstk_estk_cnt, '1주당 액면가액': fv_ps, '증자방식': ic_mthn,
-                   '의결권': vtr_info, '이익배당': dvd_info, '신주발행가액': pst_std_val, '할인율 또는 할증율(%)': dc_rate}
-    return row
 
 # Dataframe 변환 및 다운로드
 def set_df(df, file_nm, start_dt, end_dt):
