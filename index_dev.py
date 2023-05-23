@@ -89,12 +89,16 @@ elif selected == "타법인출자현황":
 
 elif selected == "CPS/RCPS":
     st.header('CPS/RCPS')
-    with open('./df_cprs_new.pkl', 'rb') as f:
-        df_cprs = pickle.load(f)
+    all_yn = st.radio('검색 유형', ('전체 검색', '회사별 검색'), horizontal=True)
 
-    with st.form(key='form2'):
-        corp_nm_list = df_cprs.sort_values('발행사')['발행사'].unique()
-        corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
+    with st.form(key='form3'):
+        if all_yn == '회사별 검색':
+            with open('./df_cprs_new.pkl', 'rb') as f:
+                df_cprs = pickle.load(f)
+            corp_nm_list = df_cprs.sort_values('발행사')['발행사'].unique()
+            corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
+        else:
+            corp_nm = ''
 
         c1, c2 = st.columns(2)
         with c1:
