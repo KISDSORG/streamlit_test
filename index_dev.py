@@ -93,7 +93,7 @@ elif selected == "타법인출자현황":
             ecm2.main(year, r_code)
 
 elif selected == "CPS/RCPS":
-    st.header('CPS/RCPS')
+    st.header('CPS/RCPS 발행내역')
     all_yn = st.radio('검색 유형', ('전체 검색', '회사별 검색'), horizontal=True)
 
     with st.form(key='form3'):
