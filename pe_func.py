@@ -117,8 +117,6 @@ def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr
         if corp_nm == '':
             df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))]
         else:
-            df['발행사'] = df['발행사'].str.replace('주식회사', '').str.replace('(주)', '').str.replace('(', '').str.replace(')',
-                                                                                                                  '').str.strip()
             df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))
                     & (df['발행사'] == corp_nm)]
         df.loc[df['표면이자율(%)'] == -1000, '표면이자율(%)'] = '-'
