@@ -38,7 +38,7 @@ if selected == "주식연계채권":
             corp_nm = ''
 
         knd = st.multiselect('채권 종류', ('전환사채권', '신주인수권부사채권', '교환사채권'))
-        c1, c2 = st.columns(3)
+        c1, c2 = st.columns(2)
         with c1:
             start_dt = st.date_input('시작일')
         with c2:
