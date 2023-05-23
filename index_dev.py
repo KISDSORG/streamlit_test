@@ -115,15 +115,13 @@ elif selected == "CPS/RCPS":
         else:
             pe_func.set_df(df, "CPS_RCPS", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
-elif selected == "신종자본증권":
+elif selected == "영구채":
     st.header('신종자본증권(영구채) 발행내역')
-    if "disabled" not in st.session_state:
-        st.session_state.disabled = True
     corp_code = ''
-    st.checkbox('전체', key="disabled")
+    all_yn = st.radio('검색 유형', ('전체 검색', '회사별 검색'), horizontal=True)
 
     with st.form(key='form4'):
-        if st.session_state.disabled == False:
+        if all_yn =='회사별 검색':
             if "corp" not in st.session_state:
                 with st.spinner("기업정보 최초 로딩 시 시간이 소요됩니다😅"):
                     corp_dict = pe_func.get_corp_dict()
@@ -141,7 +139,7 @@ elif selected == "신종자본증권":
         with c1:
             start_dt = st.date_input('시작일')
         with c2:
-            if st.session_state.disabled == True:
+            if all_yn == '전체 검색':
                 end_dt = st.date_input('종료일(시작일로부터 3개월까지 조회 가능)')
             else:
                 end_dt = st.date_input('종료일')
