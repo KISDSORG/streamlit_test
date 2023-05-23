@@ -33,7 +33,7 @@ if selected == "주식연계채권":
             with open('./Mezzanine_new.pkl', 'rb') as f:
                 df_mzn = pickle.load(f)
             corp_nm_list = df_mzn.sort_values('발행사')['발행사'].unique()
-            corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
+            corp_nm = st.multiselect('기업명을 입력하세요', corp_nm_list)
         else:
             corp_nm = ''
 
@@ -101,7 +101,7 @@ elif selected == "CPS/RCPS":
             with open('./df_cprs_new.pkl', 'rb') as f:
                 df_cprs = pickle.load(f)
             corp_nm_list = df_cprs.sort_values('발행사')['발행사'].unique()
-            corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
+            corp_nm = st.multiselect('기업명을 입력하세요', corp_nm_list)
         else:
             corp_nm = ''
 
