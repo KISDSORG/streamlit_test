@@ -142,7 +142,7 @@ def get_perp_data(start_dt, end_dt, corp_code=None):
 
     df = pd.DataFrame(rows)
     if df.empty == False :
-        df = df.sort_values('공시일')
+        df = df.sort_values('공시일', ascending=True)
         df = df.dropna(subset=['발행사'])
     return df
 
