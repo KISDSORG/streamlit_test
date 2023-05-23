@@ -93,12 +93,12 @@ elif selected == "타법인출자현황":
             ecm2.main(year, r_code)
 
 elif selected == "CPS/RCPS":
-    st.header('CPS/RCPS 발행내역')
+    st.header('CPS/RCPS')
     all_yn = st.radio('검색 유형', ('전체 검색', '회사별 검색'), horizontal=True)
 
     with st.form(key='form3'):
         if all_yn == '회사별 검색':
-            with open('./df_cprs_new.pkl', 'rb') as f:
+            with open('Cprs_new.pkl', 'rb') as f:
                 df_cprs = pickle.load(f)
             corp_nm_list = df_cprs.sort_values('발행사')['발행사'].unique()
             corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
