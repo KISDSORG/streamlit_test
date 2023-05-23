@@ -8,23 +8,13 @@ from bs4 import BeautifulSoup
 import zipfile
 from io import BytesIO
 import xmltodict
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 warnings.filterwarnings('ignore')
 API_KEY = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
 headers= {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
           'Accept-Encoding': '*', 'Connection': 'keep-alive'}
-options = Options()
-options.add_argument('--disable-gpu')
-options.add_argument('--headless')
-
-@st.experimental_singleton
-def get_driver():
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 # 고유번호-회사명 매칭 리스트
 def get_corp_dict():
@@ -113,7 +103,7 @@ def get_rcept_no_by_corp(corp_code, report_nm, bgn_de, end_de):
 
     return rcept_no_list
 
-# 주요사항보고서(메자닌채권) 호출
+# 주요사항보고서(메자닌채권) 데이터 호출
 def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr_sf_min, intr_sf_max):
     with open('./Mezzanine_new.pkl', 'rb') as f:
         df = pickle.load(f)
@@ -137,7 +127,7 @@ def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr
         df.loc[df['만기이자율(%)'] == -1000, '만기이자율(%)'] = '-'
     return df
 
-# 주요사항보고서(자본으로인정되는채무증권발행결정) 호출
+# 주요사항보고서(자본으로인정되는채무증권발행결정) 추출
 def get_perp_data(start_dt, end_dt, corp_code=None):
     rcept_name = '주요사항보고서(자본으로인정되는채무증권발행결정)'
     rcept_no_list = []
@@ -193,6 +183,8 @@ def get_perp_docu(rcept_no):
                   + (("채무상환자금(원): " + fnd_use_rd + "\n") if fnd_use_rd != '-' else '') \
                   + (("타법인증권취득자금(원): " + anc_acq_prc + "\n") if anc_acq_prc != '-' else '') \
                   + (("기타자금(원): " + fnd_use3 + "\n") if fnd_use3 != '-' else '')
+            prft_rate = table.find('te', attrs={'acode':'PRFT_RATE'}).get_text() # 표면이자율
+            lst_rtn_rt = table.find('te', attrs={'acode':'LST_RTN_RT'}).get_text() # 만기이자율
             exp_dt = table.find('tu', attrs={'aunit': 'EXP_DT'}).get_text()  # 사채만기일
             exp_dt = '' if exp_dt == '-' else exp_dt
             exp_dt_dur = table.find('te', attrs={'acode': 'EXP_DT_DUR'}).get_text()  # 사채만기기간
@@ -218,7 +210,8 @@ def get_perp_docu(rcept_no):
                     issu_nm = issu_nm + issu_temp + ","
             issu_nm = issu_nm[:-1]
 
-            row = {'발행사': company_nm, '종류': pl_knd, '공시일': rcept_dt, '권면총액': dnm_sum, '자금조달의 목적': fnd, '사채만기일(기간)': exp_dt + "(" + exp_dt_dur + ")",
+            row = {'발행사': company_nm, '종류': pl_knd, '공시일': rcept_dt, '권면총액': dnm_sum, '자금조달의 목적': fnd,
+                   '표면이자율(%)': prft_rate, '만기이자율(%)': lst_rtn_rt, '사채만기일(기간)': exp_dt + "(" + exp_dt_dur + ")",
                    '이자지급방법': int_gv_mth, '이자지급 정지(유예) 가능여부 및 조건': int_stp, '유예이자 누적여부': int_stp_acm, '이자율 조정 조건': int_st_up,
                    '원금 만기상환방법': rtn_mth, '원금 조기상환 조건': erl_rtn_mth, '원금 만기연장 조건 및 방법': exp_rnw_mth,
                    '옵션': opt_fct, '대표주관회사': chf_agn, '인수인': issu_nm}
@@ -232,30 +225,22 @@ def get_perp_docu(rcept_no):
 
     return row
 
-# 주요사항보고서(유상증자결정) 호출
-def get_cps_data(start_dt, end_dt, corp_code=None):
-    rcept_name = '주요사항보고서(유상증자결정)'
-    rcept_no_list = []
-    start_dt = start_dt.strftime('%Y%m%d')
-    end_dt = end_dt.strftime('%Y%m%d')
-    if corp_code == '':
-        rcept_no_list.extend(get_rcept_no(rcept_name, start_dt, end_dt))
+# 주요사항보고서(유상증자결정) 데이터 호출
+def get_cps_data(start_dt, end_dt, corp_nm):
+    with open('./df_cprs_new.pkl', 'rb') as f:
+        df = pickle.load(f)
+    if corp_nm == '':
+        df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))]
     else:
-        rcept_no_list.extend(get_rcept_no_by_corp(corp_code, rcept_name, start_dt, end_dt))
-    rows = []
-    for rcept in rcept_no_list:
-        row = get_cps_docu(rcept)
-        rows.append(row)
-
-    df = pd.DataFrame(rows)
+        df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))
+                & (df['발행사'] == corp_nm)]
     if df.empty == False :
         df = df.dropna(subset=['발행사'])
     return df
 
 # 주요사항보고서(유상증자결정) 상세정보 추출
-def get_cps_docu(rcept_no):
+def get_cps_docu(rcept_no, driver):
     print("보고서 번호:", rcept_no)
-    driver = get_driver()
     url = 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=' + rcept_no
     driver.get(url)
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -271,7 +256,7 @@ def get_cps_docu(rcept_no):
     else:
         nstk_estk_cnt = nstk_estk[0].next_sibling.next_sibling.get_text()  # 신주의 종류와 수
 
-        if nstk_estk_cnt.strip() in ('-', '0') :
+        if nstk_estk_cnt.strip() in ('-', '0')  :
             row = {}
         else:
             rcept_dt = rcept_no[:8]
@@ -296,7 +281,7 @@ def get_cps_docu(rcept_no):
     return row
 
 # Dataframe 변환 및 다운로드
-def set_df(df, file_nm):
+def set_df(df, file_nm, start_dt, end_dt):
     df = df.reset_index(drop=True)
     df.index += 1
     st.dataframe(df)
@@ -305,6 +290,6 @@ def set_df(df, file_nm):
     st.download_button(
         label="Download",
         data=csv,
-        file_name='{}.csv'.format(file_nm),
+        file_name='{}_{}_{}.csv'.format(file_nm, start_dt, end_dt),
         mime='text/csv'
     )
