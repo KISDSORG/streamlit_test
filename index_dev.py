@@ -113,6 +113,8 @@ elif selected == "CPS/RCPS":
         if df.empty:
             st.info('수집할 데이터가 없습니다', icon="🤔")
         else:
+            # 총 조회 건수
+            row_cnt = "총 " + str(df.shape[0]) + "건"
             pe_func.set_df(df, "CPS_RCPS", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
 elif selected == "영구채":
@@ -155,6 +157,8 @@ elif selected == "영구채":
                 if df.empty:
                     st.info('수집할 데이터가 없습니다', icon="🤔")
                 else:
+                    # 총 조회 건수
+                    row_cnt = "총 " + str(df.shape[0]) + "건"
                     pe_func.set_df(df, "perp_bond", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
         else:
             with st.spinner("데이터를 수집 중입니다🤖"):
@@ -162,6 +166,8 @@ elif selected == "영구채":
             if df.empty:
                 st.info('수집할 데이터가 없습니다', icon="🤔")
             else:
+                # 총 조회 건수
+                row_cnt = "총 " + str(df.shape[0]) + "건"
                 pe_func.set_df(df, "perp_bond", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
 else:
