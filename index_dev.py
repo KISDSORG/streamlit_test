@@ -26,7 +26,17 @@ with st.sidebar:
 
 if selected == "주식연계채권":
     st.header('주식연계채권 발행내역')
+    all_yn = st.radio('검색 유형', ('전체 검색', '회사별 검색'), horizontal=True)
+
     with st.form(key='form1'):
+        if all_yn == '회사별 검색':
+            with open('./Mezzanine_new.pkl', 'rb') as f:
+                df_mzn = pickle.load(f)
+            corp_nm_list = df_mzn.sort_values('발행사')['발행사'].unique()
+            corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
+        else:
+            corp_nm = ''
+
         knd = st.multiselect('채권 종류', ('전환사채권', '신주인수권부사채권', '교환사채권'))
         c1, c2, c3 = st.columns(3)
         with c1:
