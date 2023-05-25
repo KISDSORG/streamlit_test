@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import zipfile
 from io import BytesIO
 import xmltodict
+import time
 
 warnings.filterwarnings('ignore')
 API_KEY = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
@@ -32,8 +33,6 @@ def get_corp_dict():
 # 보고서명, 일자로 검색해서 보고서접수번호 추출(최대 호출 가능기간: 3개월)
 def get_rcept_no(report_nm, bgn_de, end_de):
     rcept_no_list = []
-    # bgn_de = bgn_de.strftime('%Y%m%d')
-    # end_de = end_de.strftime('%Y%m%d')
     url = 'https://opendart.fss.or.kr/api/list.xml'
     params = {'crtfc_key': API_KEY
         , 'bgn_de': bgn_de
@@ -101,7 +100,7 @@ def get_rcept_no_by_corp(corp_code, report_nm, bgn_de, end_de):
 
     return rcept_no_list
 
-# 주요사항보고서(메자닌채권) 데이터 호출
+# 주요사항보고서(전환,신주인수권, 교환채권) 데이터 호출
 def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr_sf_min, intr_sf_max):
     with open('./pickle/Mezzanine_new.pkl', 'rb') as f:
         df = pickle.load(f)
@@ -122,6 +121,73 @@ def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr
         df.loc[df['표면이자율(%)'] == -1000, '표면이자율(%)'] = '-'
         df.loc[df['만기이자율(%)'] == -1000, '만기이자율(%)'] = '-'
     return df
+
+# 주요사항보고서(전환,신주인수권, 교환채권) 상세정보 추출
+def get_mezn_docu(rcept_no):
+    url = 'https://opendart.fss.or.kr/api/document.xml'
+    params = {'crtfc_key': API_KEY, 'rcept_no': rcept_no}
+    response = requests.get(url, params=params, verify=False)
+    time.sleep(1)
+    try:
+        zf = zipfile.ZipFile(BytesIO(response.content))
+        fp = zf.read('{}.xml'.format(rcept_no))
+        try:
+            xml_str = fp.decode('cp949')
+            xml_str = xml_str.replace('<=', '')
+            xml = xml_str.encode('cp949')
+        except:
+            xml_str = fp.decode('utf-8')
+            xml_str = xml_str.replace('<=', '')
+            xml = xml_str.encode('utf-8')
+
+        soup = BeautifulSoup(xml, features='html.parser')
+        doc_nm = '전환사채권' if '전환사채권' in soup.find('document-name').get_text() else (
+            '신주인수권부사채권' if '신주인수권' in soup.find('document-name').get_text() else '교환사채권')  # 보고서 종류
+        table = soup.find('table-group', attrs={'aclass': 'CB_PUB'}) if doc_nm == '전환사채권' else (
+            soup.find('table-group', attrs={'aclass': 'BW_PUB'}) if doc_nm == '신주인수권부사채권' else soup.find('table-group', attrs={'aclass': 'EB_PUB'}))
+        company_nm = soup.find('company-name').get_text()  # 발행사
+        rcept_dt = rcept_no[:8]  # 공시일
+        pym_dt = table.find('tu', attrs={'aunit': 'PYM_DT'}).get('aunitvalue')  # 발행일
+        seq_no = table.find('te', attrs={'acode': 'SEQ_NO'}).get_text()  # 회차
+        dnm_sum = table.find('te', attrs={'acode': 'DNM_SUM'}).get_text()  # 권면총액
+        prft_rate = table.find('te', attrs={'acode': 'PRFT_RATE'}).get_text()  # 표면이자율
+        lst_rtn_rt = table.find('te', attrs={'acode': 'LST_RTN_RT'}).get_text()  # 만기이자율
+        exp_dt = table.find('tu', attrs={'aunit': 'EXP_DT'}).get('aunitvalue')  # 사채만기일
+        exe_rt = table.find('te', attrs={'acode': 'EXE_RT'}).get_text()  # 전환비율
+        exe_prc = table.find('te', attrs={'acode': 'EXE_PRC'}).get_text()  # 전환가액
+        exe_func = table.find('te', attrs={'acode': 'EXE_FUNC'}).get_text()  # 할증발행
+        stk_knd = table.find('te', attrs={'acode': 'STK_KND'}).get_text()  # 대상주식
+        stk_cnt = table.find('te', attrs={'acode': 'STK_CNT'}).get_text()  # 주식수
+        stk_rt = table.find('te', attrs={'acode': 'STK_RT'}).get_text()  # 주식총수대비비율
+        sb_bgn_dt = table.find('tu', attrs={'aunit': 'SB_BGN_DT'}).get('aunitvalue')  # 시작일
+        sb_end_dt = table.find('tu', attrs={'aunit': 'SB_END_DT'}).get('aunitvalue')  # 종료일
+        try:
+            min_rsn = table.find('te', attrs={'acode': 'MIN_RSN'}).get_text()  # 리픽싱조항
+            min_prc = table.find('te', attrs={'acode': 'MIN_PRC'}).get_text()  # 최저조정가액한도
+        except:
+            min_rsn = '-'
+            min_prc = '-'
+
+        issu_table_group = soup.find('table-group', attrs={'aclass': 'CRP_ISSU'})  # 인수인 부분(특정인에 대한 대상자별 사채발행내역)
+        issu_table = issu_table_group.find('table', attrs={'aclass': 'EXTRACTION'})
+        issu_nms = issu_table.tbody.find_all('tr')
+        issu_nm = ""
+        for i in issu_nms:
+            issu_nm = issu_nm + i.find('te', attrs={'acode': "ISSU_NM"}).get_text() + ","
+        issu_nm = issu_nm[:-1]
+
+        row = {'종류': doc_nm, '발행사': company_nm, '공시일': rcept_dt, '발행일': pym_dt, '회차': seq_no, '권면총액': dnm_sum,
+               '표면이자율(%)': prft_rate, '만기이자율(%)': lst_rtn_rt,
+               '사채만기일': exp_dt, '전환/행사/교환 비율': exe_rt, '전환/행사/교환 가액': exe_prc, '대상주식': stk_knd, '주식수': stk_cnt,
+               '주식총수대비비율(%)': stk_rt, '청구/행사 시작일':sb_bgn_dt, '청구/행사 종료일':sb_end_dt, '할증발행':exe_func, '리픽싱조항': min_rsn, '최저조정가액한도': min_prc, '인수인': issu_nm}
+
+        return row
+
+    except Exception as e:
+        print(rcept_no + " Error!")
+        print(e)
+
+        return {}
 
 # 주요사항보고서(자본으로인정되는채무증권발행결정) 추출
 def get_perp_data(start_dt, end_dt, corp_code=None):
