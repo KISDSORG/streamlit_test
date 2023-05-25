@@ -7,3 +7,10 @@ xmltodict
 graphviz
 OpenDartReader==0.2.1
 dart_fss==0.4.2
+lxml
+zipp==3.7.0
+Datetime==4.3
+urllib3==1.26.15
+matplotlib==3.5.1
+openpyxl
+pathlib
