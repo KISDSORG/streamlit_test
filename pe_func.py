@@ -18,7 +18,7 @@ headers= {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
 # 고유번호-회사명 매칭 리스트
 def get_corp_dict():
     url = 'https://opendart.fss.or.kr/api/corpCode.xml'
-    response = requests.get(url, paramsCarro={'crtfc_key': API_KEY}, verify=False)
+    response = requests.get(url, params={'crtfc_key': API_KEY}, verify=False)
     zf = zipfile.ZipFile(BytesIO(response.content))
     file = zf.read('CORPCODE.xml').decode('utf-8')
     data_odict = xmltodict.parse(file)
