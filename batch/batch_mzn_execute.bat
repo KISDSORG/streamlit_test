@@ -1,0 +1,1 @@
+"C:\ProgramData\Anaconda3\python.exe" "C:\Users\Administrator\Desktop\ccm\test\batch.py"
