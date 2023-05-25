@@ -1,1 +1,1 @@
-"C:\ProgramData\Anaconda3\python.exe" "C:\Users\Administrator\Desktop\ccm\test\batch.py"
+"C:\ProgramData\Anaconda3\python.exe" "C:\Users\Administrator\Desktop\ccm\streamlit_test\batch_mzn.py"
