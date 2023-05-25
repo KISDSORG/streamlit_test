@@ -1,11 +1,14 @@
 import pandas as pd
 import time
+import os
 import pickle
 import datetime
 from datetime import timedelta
 import pe_func
 
-with open('./pickle/Cprs_new.pkl', 'rb') as f:
+dir_path = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(dir_path, 'pickle', 'Cprs_new.pkl'), 'rb') as f:
     df_org = pickle.load(f)
 df_org = df_org.dropna(subset=['공시일', '발행사'])
 
@@ -39,7 +42,7 @@ if __name__ == '__main__':
         print("크롤링 결과 사이즈: ", df.shape)
 
         # 기존파일 백업
-        with open('./pickle/Cprs_bk.pkl', 'wb') as f:
+        with open(os.path.join(dir_path, 'pickle', 'Cprs_bk.pkl'), 'wb') as f:
             pickle.dump(df_org, f)
         print("백업 사이즈: ", df_org.shape)
 
@@ -49,7 +52,7 @@ if __name__ == '__main__':
         df_new.reset_index(inplace=True, drop=True)
         df_new = df_new.drop_duplicates(ignore_index=True)
         print("최종 사이즈: ", df_new.shape)
-        with open('./pickle/Cprs_new.pkl', 'wb') as f:
+        with open(os.path.join(dir_path, 'pickle', 'Cprs_new.pkl'), 'wb') as f:
             pickle.dump(df_new, f)
 
     else:

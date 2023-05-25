@@ -1,17 +1,14 @@
 import pandas as pd
-import warnings
 import pickle
+import os
 import datetime
 from datetime import timedelta
 import time
 import pe_func
 
-warnings.filterwarnings(action='ignore')
-API_KEY = 'd7d1be298b9cac1558eab570011f2bb40e2a6825'
-headers= {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36',
-          'Accept-Encoding': '*', 'Connection': 'keep-alive'}
+dir_path = os.path.dirname(os.path.abspath(__file__))
 
-with open('./pickle/Mezzanine_new.pkl', 'rb') as f:
+with open(os.path.join(dir_path, 'pickle', 'Mezzanine_new.pkl'), 'rb') as f:
     df_org = pickle.load(f)
 
 df_org = df_org.dropna(subset=['공시일', '발행사'])
@@ -43,14 +40,14 @@ if __name__ == '__main__':
 
         # 기존파일 백업
         print("백업 사이즈: ", df_org.shape)
-        with open('./pickle/Mezzanine_bk.pkl', 'wb') as f:
+        with open(os.path.join(dir_path, 'pickle', 'Mezzanine_bk.pkl'), 'wb') as f:
             pickle.dump(df_org, f)
 
         # 파일 합치기
         df_new = pd.concat([df_org, df])
         df_new = df_new.sort_values('공시일')
         print("최종 사이즈: ", df_new.shape)
-        with open('./pickle/Mezzanine_new.pkl', 'wb') as f:
+        with open(os.path.join(dir_path, 'pickle', 'Mezzanine_new.pkl'), 'wb') as f:
             pickle.dump(df_new, f)
 
     else:
