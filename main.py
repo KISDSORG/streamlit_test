@@ -30,7 +30,7 @@ if selected == "주식연계채권":
 
     with st.form(key='form1'):
         if all_yn == '회사별 검색':
-            with open('./Mezzanine_new.pkl', 'rb') as f:
+            with open('./pickle/Mezzanine_new.pkl', 'rb') as f:
                 df_mzn = pickle.load(f)
             corp_nm_list = df_mzn.sort_values('발행사')['발행사'].unique()
             corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
@@ -98,7 +98,7 @@ elif selected == "CPS/RCPS":
 
     with st.form(key='form3'):
         if all_yn == '회사별 검색':
-            with open('Cprs_new.pkl', 'rb') as f:
+            with open('./pickle/Cprs_new.pkl', 'rb') as f:
                 df_cprs = pickle.load(f)
             corp_nm_list = df_cprs.sort_values('발행사')['발행사'].unique()
             corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
@@ -171,9 +171,9 @@ elif selected == "영구채":
 
 else:
     st.header("기업 지배구조")
-    uploaded_file = st.file_uploader("지배구조 데이터를 업로드 해주세요(확장자:xlsx)", type='xlsx', key="file")
+    uploaded_file = st.file_uploader("지배구조 데이터를 업로드 해주세요(확장자 xlsx)", type='xlsx', key="file")
     # 샘플 파일 다운로드
-    with open('./sample.xlsx', 'rb') as f:
+    with open('./datasets/sample.xlsx', 'rb') as f:
         st.download_button('Sample Input File Download', f, file_name='sample.xlsx')
 
     if uploaded_file is not None:
