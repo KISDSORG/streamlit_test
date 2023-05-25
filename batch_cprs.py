@@ -5,7 +5,7 @@ import datetime
 from datetime import timedelta
 import pe_func
 
-with open('./Cprs_new.pkl', 'rb') as f:
+with open('./pickle/Cprs_new.pkl', 'rb') as f:
     df_org = pickle.load(f)
 df_org = df_org.dropna(subset=['공시일', '발행사'])
 
@@ -15,11 +15,6 @@ end_de = (datetime.datetime.today()-timedelta(days=1)).strftime('%Y%m%d')
 print('bgn_de: ', bgn_de, 'end_de: ', end_de)
 
 if __name__ == '__main__':
-    # 기존파일 백업
-    with open('./Cprs_bk.pkl', 'wb') as f:
-        pickle.dump(df_org, f)
-    print("백업 사이즈: ", df_org.shape)
-
     rcept_name = '주요사항보고서(유상증자결정)'
     rcept_no_list = []
     rcept_no_list.extend(pe_func.get_rcept_no(rcept_name, bgn_de, end_de))
@@ -32,7 +27,8 @@ if __name__ == '__main__':
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    if df.empty == False:
+    
+    if df.empty == False:       
         df = df.dropna(subset=['공시일', '발행사'])
         df['주식총수대비비율'] = df.주식총수대비비율.str.replace('\n', '')
         df['전환조건'] = df.전환조건.str.replace('\n', '')
@@ -42,13 +38,18 @@ if __name__ == '__main__':
             '-')
         print("크롤링 결과 사이즈: ", df.shape)
 
+        # 기존파일 백업
+        with open('./pickle/Cprs_bk.pkl', 'wb') as f:
+            pickle.dump(df_org, f)
+        print("백업 사이즈: ", df_org.shape)
+
         # 파일 합치기
         df_new = pd.concat([df_org, df])
         df_new = df_new.sort_values('공시일')
         df_new.reset_index(inplace=True, drop=True)
         df_new = df_new.drop_duplicates(ignore_index=True)
         print("최종 사이즈: ", df_new.shape)
-        with open('./Cprs_new.pkl', 'wb') as f:
+        with open('./pickle/Cprs_new.pkl', 'wb') as f:
             pickle.dump(df_new, f)
 
     else:
