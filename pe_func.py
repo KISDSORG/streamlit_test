@@ -17,7 +17,7 @@ headers= {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
 # 고유번호-회사명 매칭 리스트
 def get_corp_dict():
     url = 'https://opendart.fss.or.kr/api/corpCode.xml'
-    response = requests.get(url, params={'crtfc_key': API_KEY}, verify=False)
+    response = requests.get(url, paramsCarro={'crtfc_key': API_KEY}, verify=False)
     zf = zipfile.ZipFile(BytesIO(response.content))
     file = zf.read('CORPCODE.xml').decode('utf-8')
     data_odict = xmltodict.parse(file)
@@ -103,7 +103,7 @@ def get_rcept_no_by_corp(corp_code, report_nm, bgn_de, end_de):
 
 # 주요사항보고서(메자닌채권) 데이터 호출
 def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr_sf_min, intr_sf_max):
-    with open('./Mezzanine_new.pkl', 'rb') as f:
+    with open('./pickle/Mezzanine_new.pkl', 'rb') as f:
         df = pickle.load(f)
         df = df[df['종류'].isin(knd)]
         df['표면이자율(%)'] = df['표면이자율(%)'].str.strip()
@@ -224,7 +224,7 @@ def get_perp_docu(rcept_no):
 
 # 주요사항보고서(유상증자결정) 데이터 호출
 def get_cps_data(start_dt, end_dt, corp_nm):
-    with open('Cprs_new.pkl', 'rb') as f:
+    with open('./pickle/Cprs_new.pkl', 'rb') as f:
         df = pickle.load(f)
     if corp_nm == '':
         df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))]
