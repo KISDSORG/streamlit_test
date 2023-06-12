@@ -52,6 +52,8 @@ if selected == "주식연계채권":
             if all_yn == '회사별 검색':
                 with open('./pickle/Mezzanine_new.pkl', 'rb') as f:
                     df_mzn = pickle.load(f)
+                df_mzn['발행사'] = df_mzn['발행사'].str.replace('주식회사', '').str.replace('(주)', '').str.replace('㈜', '').str.replace(
+                    '(','').str.replace(')', '').str.strip()
                 corp_nm_list = df_mzn.sort_values('발행사')['발행사'].unique()
                 corp_nm = st.selectbox('기업명을 입력하세요', corp_nm_list)
             else:
