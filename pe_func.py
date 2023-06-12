@@ -361,6 +361,33 @@ def get_cps_docu(rcept_no):
 
     return row
 
+# 메자닌채권 Data Cleansing
+def cleansing_mzn_df(df):
+    df['발행사'] = df['발행사'].str.replace('주식회사', '').str.replace('(주)', '').str.replace('㈜', '').str.replace('(',
+                                                                                                          '').str.replace(
+        ')', '').str.strip()
+    df['발행일'] = df['발행일'].str.replace(pat=r'[ㄱ-ㅣ가-힣]+', repl=r'', regex=True).str.replace(' ', '')
+    df = df[df['발행일'] != '-']
+    df['발행연도'] = df['발행일'].str[:4]
+    df['발행월'] = df['발행일'].str[4:6]
+    df = df.astype({'발행연도': int, '발행월': int})
+    df['권면총액'] = df['권면총액'].str.replace(',', '').replace('-', '0').str.replace('\n', '').astype('float')
+    df['표면이자율(%)'] = df['표면이자율(%)'].str.replace('\n', '').str.replace('&cr', '')
+    df['만기이자율(%)'] = df['만기이자율(%)'].str.replace('\n', '').str.replace('&cr', '')
+    df = df[df['표면이자율(%)'] != '-']
+    df['표면이자율(%)'] = df['표면이자율(%)'].astype('float')
+    df = df[df['만기이자율(%)'] != '-']
+    df['만기이자율(%)'] = df['만기이자율(%)'].astype('float')
+    df['주식수'] = df['주식수'].str.replace(',', '').str.replace('\n', '').str.replace('&cr', '')
+    df = df[df['주식수'] != '-']
+    df['주식수'] = df['주식수'].astype('float')
+    df.loc[df['종류'] == '신주인수권', '종류'] = '신주인수권부사채권'
+    df['발행일'] = pd.to_datetime(df['발행일'])
+    df['공시일'] = pd.to_datetime(df['공시일'])
+    df = df.reset_index(drop=True)
+    df = df.loc[df.groupby(['종류', '발행사', '회차'])['공시일'].idxmax()]
+    return df
+
 # Dataframe 변환 및 다운로드
 def set_df(df, file_nm, start_dt, end_dt):
     # 총 조회 건수
