@@ -120,8 +120,7 @@ def get_mezn_data(knd, corp_nm, start_dt, end_dt, intr_ex_min, intr_ex_max, intr
                     & (df['발행사'] == corp_nm)]
         df.loc[df['표면이자율(%)'] == -1000, '표면이자율(%)'] = '-'
         df.loc[df['만기이자율(%)'] == -1000, '만기이자율(%)'] = '-'
-        df['발행사'] = df['발행사'].str.replace('주식회사', '').str.replace('(주)', '').str.replace('㈜', '').str.replace(
-        '(', '').str.replace(')', '').str.strip()
+        df['발행사'] = df['발행사'].str.replace('주식회사', '').str.replace('(주)', '').str.replace('㈜', '').str.replace('(', '').str.replace(')', '').str.strip()
     return df
 
 # 주요사항보고서(전환,신주인수권, 교환채권) 상세정보 추출
