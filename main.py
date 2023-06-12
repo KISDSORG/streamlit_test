@@ -25,7 +25,7 @@ cf.go_offline()
 dir_path = os.path.dirname(os.path.abspath(__file__))
 left_mg = 0
 right_mg = 10
-top_mg = 10
+top_mg = 0
 btm_mg = 10
 hide_table_row_index = """
             <style>
