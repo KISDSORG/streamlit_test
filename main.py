@@ -44,7 +44,7 @@ with st.sidebar:
 
 if selected == "주식연계채권":
     st.header('주식연계채권 발행내역')
-    tab1, tab2 = st.tabs(['발행내역', '대시보드'])
+    tab1, tab2 = st.tabs(['💰발행내역', '📈대시보드'])
     with tab1:
         all_yn = st.radio('검색 유형', ('전체 검색', '회사별 검색'), horizontal=True)
 
@@ -66,6 +66,7 @@ if selected == "주식연계채권":
             with c2:
                 end_dt = st.date_input('종료일')  # , min_value=start_dt)
             c3, c4 = st.columns(2)
+
             with c3:
                 intr_ex_min = st.number_input('표면이자율(%) MIN', min_value=0, max_value=100, value=0)
             with c4:
