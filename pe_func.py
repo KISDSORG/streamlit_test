@@ -288,6 +288,7 @@ def get_perp_docu(rcept_no):
     except Exception as e:
         print(rcept_no + " Error!")
         print(e)
+        row = {}
 
     return row
 
