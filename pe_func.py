@@ -277,7 +277,7 @@ def get_perp_docu(rcept_no):
             issu_nm = issu_nm[:-1]
 
             row = {'발행사': company_nm, '종류': pl_knd, '공시일': rcept_dt, '권면총액': dnm_sum, '자금조달의 목적': fnd,
-                   '표면이자율(%)': prft_rate, '만기이자율(%)': lst_rtn_rt, '사채만기일(기간)': exp_dt + "(" + exp_dt_dur + ")",
+                   '표면이자율(%)': prft_rate, '만기이자율(%)': lst_rtn_rt, '사채만기일': exp_dt,  "사채만기기간": exp_dt_dur,
                    '이자지급방법': int_gv_mth, '이자지급 정지(유예) 가능여부 및 조건': int_stp, '유예이자 누적여부': int_stp_acm, '이자율 조정 조건': int_st_up,
                    '원금 만기상환방법': rtn_mth, '원금 조기상환 조건': erl_rtn_mth, '원금 만기연장 조건 및 방법': exp_rnw_mth,
                    '옵션': opt_fct, '대표주관회사': chf_agn, '인수인': issu_nm}
