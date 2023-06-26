@@ -335,6 +335,7 @@ elif selected == "CPS/RCPS":
         if df.empty:
             st.info('수집할 데이터가 없습니다', icon="🤔")
         else:
+            df.전환가액결정방법 = df.전환가액결정방법.apply('="{}"'.format)
             pe_func.set_df(df, "CPS_RCPS", start_dt.strftime('%Y%m%d'), end_dt.strftime('%Y%m%d'))
 
 elif selected == "영구채":
