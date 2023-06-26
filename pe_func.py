@@ -303,6 +303,7 @@ def get_cps_data(start_dt, end_dt, corp_nm):
                 & (df['발행사'] == corp_nm)]
     if df.empty == False :
         df = df.dropna(subset=['발행사'])
+        df[['전환청구시작일', '전환청구종료일']] = df['전환청구기간'].str.split('~', expand=True)
     return df
 
 # 주요사항보고서(유상증자결정) 상세정보 추출
