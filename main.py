@@ -148,9 +148,9 @@ if selected == "주식연계채권":
             corp_nm_list = df_mzn.sort_values('발행사')['발행사'].unique()
             corp_nm = st.selectbox('> 발행사명', corp_nm_list)
         with c_corp_2:
-            corp_start_dt = st.date_input('> 시작일', value=datetime.date(2018, 1, 1), key='corp_start_dt')
+            corp_start_dt = st.date_input('> 시작일(발행일 기준)', value=datetime.date(2018, 1, 1), key='corp_start_dt', label_visibility="visible")
         with c_corp_3:
-            corp_end_dt = st.date_input('> 종료일', key='corp_end_dt')
+            corp_end_dt = st.date_input('> 종료일(발행일 기준)', key='corp_end_dt', label_visibility="visible")
         df_corp = df_mzn[(df_mzn['발행일'] >= corp_start_dt.strftime('%Y%m%d')) & (df_mzn['발행일'] <= corp_end_dt.strftime('%Y%m%d'))]
         df_corp = df_corp.sort_values('발행일')
 
@@ -236,9 +236,9 @@ if selected == "주식연계채권":
         with c_con_3:
             con_end_value = st.number_input('> 최대값', value=10000000000, min_value=0)
         with c_con_4:
-            con_st_dt = st.date_input('> 시작일', value=datetime.date(2018, 1, 1))
+            con_st_dt = st.date_input('> 시작일(발행일 기준)', value=datetime.date(2018, 1, 1))
         with c_con_5:
-            con_end_dt = st.date_input('> 종료일')
+            con_end_dt = st.date_input('> 종료일(발행일 기준)')
 
         st.markdown('<h1 style="text-align:center">   </h1>', unsafe_allow_html=True)
         c_con_6, c_con_7= st.columns([1,2], gap='large')
