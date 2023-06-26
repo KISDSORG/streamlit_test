@@ -252,7 +252,6 @@ def get_perp_docu(rcept_no):
             prft_rate = table.find('te', attrs={'acode':'PRFT_RATE'}).get_text() # 표면이자율
             lst_rtn_rt = table.find('te', attrs={'acode':'LST_RTN_RT'}).get_text() # 만기이자율
             exp_dt = table.find('tu', attrs={'aunit': 'EXP_DT'}).get_text()  # 사채만기일
-            exp_dt = '' if exp_dt == '-' else exp_dt
             exp_dt_dur = table.find('te', attrs={'acode': 'EXP_DT_DUR'}).get_text()  # 사채만기기간
             int_gv_mth = table.find('te', attrs={'acode': 'INT_GV_MTH'}).get_text().replace('\n', '').replace('-', '')  # 이자지급방법
             int_stp = table.find('te', attrs={'acode': 'INT_STP'}).get_text().replace('\n', '').replace('-', '')  # 이자지급 정지(유예) 가능여부 및 조건
