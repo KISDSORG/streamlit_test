@@ -352,6 +352,15 @@ def get_cps_docu(rcept_no):
             cvt_end_dt = table.find('tu', attrs={'aunit': 'CVT_END_DT'}).get_text()  # 종료일
             cvt_prd = cvt_bgn_dt + "~" + cvt_end_dt
             cvt_cdt = table.find('te', attrs={'acode': 'EXE_REG'}).get_text()  # 전환조건
+            try:
+                min_prc = table.find('te', attrs={'acode': 'MIN_PRC'}).get_text() # 최저 조정가액
+                min_rsn = table.find('te', attrs={'acode': 'MIN_RSN'}).get_text() # 최저 조정가액 근거
+                ctr_lmt = table.find('te', attrs={'acode': 'CTR_LMT'}).get_text() # 발행당시 전환가액의 70%미만으로 조정가능한 잔여발행한도
+            except:
+                min_prc = '-'
+                min_rsn = '-'
+                ctr_lmt = '-'
+            opt_fct = table.find('te', attrs={'acode': 'OPT_FCT'}).get_text() # 옵션에 관한 사항
             vtr_info = table.find('te', attrs={'acode': 'VTR_INFO'}).get_text()  # 의결권
             dvd_info = table.find('te', attrs={'acode': 'DVD_INFO'}).get_text()  # 이익배당
 
@@ -361,8 +370,9 @@ def get_cps_docu(rcept_no):
 
             row = {'발행사': company_nm, '공시일': rcept_dt, '신주의 종류와 수': pst_cnt, '1주당 액면가액': fval, '증자방식': ci_mth,
                    '전환비율': exe_rt, '전환가액': exe_prc, '전환가액결정방법': exe_func, '전환주식종류': cvt_knd, '전환주식수': cvt_cnt,
-                   '주식총수대비비율': cvt_rt, '전환청구기간': cvt_prd, '전환조건': cvt_cdt, '의결권': vtr_info, '이익배당': dvd_info,
-                   '신주발행가액': pst_iss_val, '할인율 또는 할증율(%)': dc_rate}
+                   '주식총수대비비율': cvt_rt, '전환청구기간': cvt_prd, '전환조건': cvt_cdt, '최저조정가액': min_prc, '최저조정가액근거': min_rsn,
+                   '전환가액의 70%미만으로 조정가능한 잔여발행한도': ctr_lmt, '의결권': vtr_info, '옵션':opt_fct,
+                   '이익배당': dvd_info, '신주발행가액': pst_iss_val, '할인율 또는 할증율(%)': dc_rate}
 
     except Exception as e:
         print(rcept_no + " Error!")
