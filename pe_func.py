@@ -301,8 +301,8 @@ def get_cps_data(start_dt, end_dt, corp_nm):
     else:
         df = df[(df['공시일'] >= start_dt.strftime('%Y%m%d')) & (df['공시일'] <= end_dt.strftime('%Y%m%d'))
                 & (df['발행사'] == corp_nm)]
-    # if df.empty == False :
-    #     df = df.dropna(subset=['발행사'])
+    if df.empty == False :
+        df = df.dropna(subset=['발행사'])
     #     df.loc[df['전환청구기간']=='-', '전환청구기간'] = '-~-'
     #     df[['전환청구시작일', '전환청구종료일']] = df['전환청구기간'].str.split('~', expand=True)
     #     df['전환청구시작일'] = df['전환청구시작일'].str.replace(pat=r'[ㄱ-ㅣ가-힣]+', repl=r'', regex=True).str.replace(' ', '').str.replace('.', '')
