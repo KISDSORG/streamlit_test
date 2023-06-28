@@ -1,6 +1,7 @@
 import streamlit as st
 import warnings
 import pandas as pd
+import numpy as np
 import json
 import pickle
 import requests
@@ -302,6 +303,7 @@ def get_cps_data(start_dt, end_dt, corp_nm):
                 & (df['발행사'] == corp_nm)]
     if df.empty == False :
         df = df.dropna(subset=['발행사'])
+        df.loc[df['전환청구기간']=='-', '전환청구기간'] = '-~-'
         df[['전환청구시작일', '전환청구종료일']] = df['전환청구기간'].str.split('~', expand=True)
         df['전환청구시작일'] = df['전환청구시작일'].str.replace(pat=r'[ㄱ-ㅣ가-힣]+', repl=r'', regex=True).str.replace(' ', '').str.replace('.', '')
         df['전환청구종료일'] = df['전환청구종료일'].str.replace(pat=r'[ㄱ-ㅣ가-힣]+', repl=r'', regex=True).str.replace(' ',
@@ -387,16 +389,17 @@ def cleansing_mzn_df(df):
                                                                                                           '').str.replace(
         ')', '').str.strip()
     df['발행일'] = df['발행일'].str.replace(pat=r'[ㄱ-ㅣ가-힣]+', repl=r'', regex=True).str.replace(' ', '')
-    df = df[df['발행일'] != '-']
+    df['사채만기일'] = df['사채만기일'].str.replace(pat=r'[ㄱ-ㅣ가-힣]+', repl=r'', regex=True).str.replace(' ', '').str.replace('.','')
+    df = df[(df['발행일'] != '-') & (df['사채만기일'] != '-')]
+    df['만기기간'] = round((pd.to_datetime(df['사채만기일']) - pd.to_datetime(df['발행일']))/np.timedelta64(1, 'Y'), 0)
     df['발행연도'] = df['발행일'].str[:4]
     df['발행월'] = df['발행일'].str[4:6]
     df = df.astype({'발행연도': int, '발행월': int})
     df['권면총액'] = df['권면총액'].str.replace(',', '').replace('-', '0').str.replace('\n', '').astype('float')
     df['표면이자율(%)'] = df['표면이자율(%)'].str.replace('\n', '').str.replace('&cr', '')
     df['만기이자율(%)'] = df['만기이자율(%)'].str.replace('\n', '').str.replace('&cr', '')
-    df = df[df['표면이자율(%)'] != '-']
+    df = df[(df['표면이자율(%)'] != '-') & (df['만기이자율(%)'] != '-')]
     df['표면이자율(%)'] = df['표면이자율(%)'].astype('float')
-    df = df[df['만기이자율(%)'] != '-']
     df['만기이자율(%)'] = df['만기이자율(%)'].astype('float')
     df['주식수'] = df['주식수'].str.replace(',', '').str.replace('\n', '').str.replace('&cr', '')
     df = df[df['주식수'] != '-']
