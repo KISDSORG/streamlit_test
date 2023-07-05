@@ -255,16 +255,16 @@ def get_perp_docu(rcept_no):
             exp_dt = table.find('tu', attrs={'aunit': 'EXP_DT'}).get_text()  # 사채만기일
             exp_dt_dur = table.find('te', attrs={'acode': 'EXP_DT_DUR'}).get_text()  # 사채만기기간
             int_gv_mth = table.find('te', attrs={'acode': 'INT_GV_MTH'}).get_text().replace('\n', '').replace('-', '')  # 이자지급방법
-            int_stp = table.find('te', attrs={'acode': 'INT_STP'}).get_text().replace('\n', '').replace('-', '')  # 이자지급 정지(유예) 가능여부 및 조건
+            int_stp = table.find('te', attrs={'acode': 'INT_STP'}).get_text().replace('\n', '').replace('-', '').replace('&cr', '')  # 이자지급 정지(유예) 가능여부 및 조건
             int_stp_acm = table.find('te', attrs={'acode': 'INT_STP_ACM'}).get_text().replace('\n', '').replace('-', '')  # 유예이자 누적 여부
             int_st_up = table.find('te', attrs={'acode': 'INT_ST_UP'}).get_text().replace('\n',
-                                                                                          '').replace('-', '')  # 금리상향조정 등 이자율 조정 조건
-            rtn_mth = table.find('te', attrs={'acode': 'RTN_MTH'}).get_text().replace('\n', '').replace('-', '')  # 원금 만기상환방법
+                                                                                          '').replace('-', '').replace('&cr', '')  # 금리상향조정 등 이자율 조정 조건
+            rtn_mth = table.find('te', attrs={'acode': 'RTN_MTH'}).get_text().replace('\n', '').replace('-', '').replace('&cr', '')  # 원금 만기상환방법
             erl_rtn_mth = table.find('te', attrs={'acode': 'ERL_RTN_MTH'}).get_text().replace('\n',
-                                                                                              '').replace('-', '')  # 원금 조기상환 가능시점 및 조건
+                                                                                              '').replace('-', '').replace('&cr', '')  # 원금 조기상환 가능시점 및 조건
             exp_rnw_mth = table.find('te', attrs={'acode': 'EXP_RNW_MTH'}).get_text().replace('\n',
-                                                                                              '').replace('-', '')  # 원금 상환 만기연장 조건 및 방법
-            opt_fct = table.find('te', attrs={'acode': 'OPT_FCT'}).get_text().replace('\n', '').replace('-', '')  # 옵션에 관한 사항
+                                                                                              '').replace('-', '').replace('&cr', '')  # 원금 상환 만기연장 조건 및 방법
+            opt_fct = table.find('te', attrs={'acode': 'OPT_FCT'}).get_text().replace('\n', '').replace('-', '').replace('&cr', '')  # 옵션에 관한 사항
             chf_agn = table.find('te', attrs={'acode': 'CHF_AGN'}).get_text()  # 대표주관회사
             issu_table_group = soup.find('table-group', attrs={'aclass': 'CRP_ISSU'})  # 인수인(특정인에 대한 대상자별 사채발행내역)
             issu_table = issu_table_group.find('table', attrs={'aclass': 'EXTRACTION'})
