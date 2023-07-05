@@ -264,17 +264,18 @@ if selected == "주식연계채권":
 
         with c_con_7:
             st.markdown(
-                '<div style = "color:white; font-size: 16px; text-align:center; background-color: grey">채권종류별 분포</div>',
+                '<div style = "color:white; font-size: 16px; text-align:center; background-color: grey">채권종류별 만기 이자율 분포</div>',
                 unsafe_allow_html=True)
             st.markdown('<h3 style="text-align:center">   </h3>', unsafe_allow_html=True)
-            fig_dot = df_con.iplot(kind='scatter', x='권면총액', y='주식수', mode='markers', asFigure=True,
+            fig_dot = df_con.iplot(kind='scatter', x='만기기간', y='만기이자율(%)', asFigure=True, mode='markers',
                                    colors=('#828e84', '#e2725b', '#38618c'), categories='종류',
-                                   xTitle='권면총액', yTitle='주식수', text='발행사')
+                                   xTitle='만기기간(년)', yTitle='만기이자율(%)', text='발행사')  # , size='권면총액')
             fig_dot.update_layout(margin_l=left_mg, margin_r=right_mg, margin_t=top_mg, margin_b=btm_mg,
                                   plot_bgcolor='white', paper_bgcolor='white',
-                                  legend=dict(bgcolor='white', yanchor='top', y=-0.2, xanchor='left', x=0.01, orientation='h'))
+                                  legend=dict(bgcolor='white', yanchor='top', y=-0.2, xanchor='left', x=0.01,
+                                              orientation='h'))
             fig_dot.update_traces(marker=dict(size=8, line=dict(width=0)),
-                                  hovertemplate=('권면총액:%{x}<br>'+'주식수:%{y}<br>'+'발행사:%{text}'))
+                                  hovertemplate=('만기기간:%{x}년<br>' + '만기이자율:%{y}%<br>' + '발행사:%{text}'))
             st.plotly_chart(fig_dot, use_container_width=True)
 
 elif selected == "타법인출자현황":
