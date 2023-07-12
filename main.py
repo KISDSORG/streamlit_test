@@ -105,8 +105,11 @@ if selected == "주식연계채권":
             df_top5 = df_mzn[(df_mzn['발행연도'] >= start_year) & (df_mzn['발행연도'] <= end_year) & (df_mzn['종류'] == knd)].groupby(['종류', '발행사'])[
                 ['권면총액']].agg(sum).sort_values('권면총액',
                                                ascending=False).reset_index().head()
-            df_top5['#'] = [1, 2, 3, 4, 5]
-            df_top5 = df_top5[['#', '발행사', '권면총액']]
+            df_top5_temp = pd.DataFrame(data=[1, 2, 3, 4, 5], columns=['#'], index=range(0, 5))
+            # df_top5['#'] = [1, 2, 3, 4, 5]
+            df_top5 = pd.concat([df_top5_temp, df_top5], axis=1)
+            df_top5 = df_top5[['#', '발행사', '권면총액']].fillna('-')
+            # df_top5 = df_top5[['#', '발행사', '권면총액']]
             st.markdown(hide_table_row_index, unsafe_allow_html=True)
             st.table(df_top5.style.format({'권면총액': '{:,.0f}'}))
 
