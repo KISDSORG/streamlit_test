@@ -100,6 +100,7 @@ if selected == "주식연계채권":
                 '<div style = "color:white; font-size: 16px; text-align:center; background-color: grey">TOP5 발행사</div>',
                 unsafe_allow_html=True)
             st.markdown('<h3 style="text-align:center">   </h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="text-align:center">채권 종류</h3>', unsafe_allow_html=True)
             knd = st.radio('> 채권 종류', ('교환사채권', '신주인수권', '전환사채권'), horizontal=True)
             knd = '신주인수권부사채권' if (knd == '신주인수권') else knd
             df_top5 = df_mzn[(df_mzn['발행연도'] >= start_year) & (df_mzn['발행연도'] <= end_year) & (df_mzn['종류'] == knd)].groupby(['종류', '발행사'])[
