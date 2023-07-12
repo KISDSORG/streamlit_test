@@ -111,7 +111,8 @@ if selected == "주식연계채권":
             df_top5 = df_top5[['#', '발행사', '권면총액']].fillna('-')
             # df_top5 = df_top5[['#', '발행사', '권면총액']]
             st.markdown(hide_table_row_index, unsafe_allow_html=True)
-            st.table(df_top5.style.format({'권면총액': '{:,.0f}'}))
+            if df_top5.loc[0, '권면총액']!='-':
+                st.table(df_top5.style.format({'권면총액': '{:,.0f}'}))
 
         with c_total_4:
             st.markdown(
