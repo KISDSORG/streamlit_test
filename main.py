@@ -113,7 +113,7 @@ if selected == "주식연계채권":
             st.markdown(hide_table_row_index, unsafe_allow_html=True)
             if (df_top5['권면총액']!='-').all():
                 st.table(df_top5.style.format({'권면총액': '{:,.0f}'}))
-            st.markdown(f"총 발행건수: {mzn_cnt}건, 총 발행금액: {mzn_amt}원")
+            st.markdown(f"(총 발행건수: {mzn_cnt}건,  총 발행금액: {mzn_amt}원)")
 
         with c_total_4:
             st.markdown(
