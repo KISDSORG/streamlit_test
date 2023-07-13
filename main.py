@@ -103,7 +103,7 @@ if selected == "주식연계채권":
             knd = st.radio('채권 종류', ('교환사채권', '신주인수권', '전환사채권'), horizontal=True)
             knd = '신주인수권부사채권' if (knd == '신주인수권') else knd
             mzn_cnt = df_mzn[(df_mzn['발행연도'] >= start_year) & (df_mzn['발행연도'] <= end_year) & (df_mzn['종류'] == knd)].shape[0]
-            mzn_amt = df_mzn[(df_mzn['발행연도'] >= start_year) & (df_mzn['발행연도'] <= end_year) & (df_mzn['종류'] == knd)]['권면총액'].sum()
+            mzn_amt = round(df_mzn[(df_mzn['발행연도'] >= start_year) & (df_mzn['발행연도'] <= end_year) & (df_mzn['종류'] == knd)]['권면총액'].sum())
             df_top5 = df_mzn[(df_mzn['발행연도'] >= start_year) & (df_mzn['발행연도'] <= end_year) & (df_mzn['종류'] == knd)].groupby(['종류', '발행사'])[
                 ['권면총액']].agg(sum).sort_values('권면총액',
                                                ascending=False).reset_index().head()
@@ -113,10 +113,7 @@ if selected == "주식연계채권":
             st.markdown(hide_table_row_index, unsafe_allow_html=True)
             if (df_top5['권면총액']!='-').all():
                 st.table(df_top5.style.format({'권면총액': '{:,.0f}'}))
-            # st.text("- 총 발행건수: "+ str(mzn_cnt))
-            # st.text("- 총 발행금액: "+ str(mzn_amt))
-            st.markdown(f"총 발행건수: {mzn_cnt}")
-            st.markdown(f"총 발행금액: {mzn_amt}")
+            st.markdown(f"총 발행건수: {mzn_cnt}건, 총 발행금액: {mzn_amt}원")
 
         with c_total_4:
             st.markdown(
